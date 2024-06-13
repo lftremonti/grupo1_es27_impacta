@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leitura no Vagão - Apresentação</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Evita rolagem */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #007BFF; /* Fundo azul para a página */
+        }
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #007BFF; /* Fundo azul para o container */
+        }
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity 0.5s ease-in-out;
+            background-color: #0056b3; /* Fundo azul mais escuro para cada slide */
+            opacity: 0; /* Inicialmente invisível */
+            z-index: 0; /* Inicialmente atrás */
+            color: white; /* Texto em branco para contraste */
+        }
+        .slide.active {
+            opacity: 1; /* Torna visível o slide ativo */
+            z-index: 1; /* Traz o slide ativo para frente */
+        }
+        .slide-content {
+            background-color: rgba(0, 0, 0, 0.7); /* Fundo semi-transparente preto */
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 800px;
+        }
+        .slide h1, .slide h2, .slide p, .slide ul {
+            margin: 10px 0;
+        }
+        .slide img {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+        .nav-buttons {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            transform: translateY(-50%);
+        }
+        .nav-button {
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+        .nav-button:disabled {
+            background-color: rgba(0, 0, 0, 0.2);
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="slide active" id="slide-1">
+            <div class="slide-content">
+                <h1>Grupo 1</h1>
+				<br>
+				<br>
+                <h2>Incentivando a leitura</h2>
+				<br>
+                <p><strong>Integrantes</strong></p>
+				<p>Alan Lucas Borges</p>
+				<p>André Carvalho</p>
+				<p>Caio Gonçalves</p>
+				<p>Caroline Sinopoli</p>
+				<p>Felipe Yonea</p>
+				<p>Gabriel Maires</p>
+				<p>Lucas Menezes Fernandes</p>
+				<p>Luis Fernando Tremonti</p>
+				<p>Uisma Lopes</p>
+            </div>			
+        </div>
+
+        <div class="slide" id="slide-2">
+            <div class="slide-content">
+                <h2>O Desafio da Leitura</h2>
+                <p>No Brasil, muitas pessoas passam horas nos transportes públicos diariamente, mas poucos têm acesso fácil a livros ou aproveitam esse tempo para ler.</p>
+                <p><strong>Dados:</strong></p>
+                <p>- Apenas 52% dos brasileiros leram um livro no último ano.</p>
+                <p>- Em média, os brasileiros passam 1h30min por dia em deslocamentos.</p>
+                <p>- Muitos dizem não terem tempo para a leitura.</p>				
+                <p><strong>Por isso ...</strong></p>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-3">
+            <div class="slide-content">
+                <h2>A Solução</h2>
+                <p>Nosso grupo decidiu reunir-se para apoiar e popularizar um projeto de incentivo à leitura.</p>                												
+				<p>Esse projeto é o "Leitura no Vagão". Que veio para inovar distribuindo livros nos transportes públicos, promovendo a leitura durante o tempo de viagem e facilitando a doação e o acesso aos livros.</p>                               			<p>Já que para ler precisamos apenas de duas coisas: </p>
+				<p>- Um livro à disposição;
+				<p>- Disposição em ler um livro.</p>       
+				<img src="imagens/logo_lnv.jpg" alt="Logo do Projeto">								
+            </div>
+        </div>
+
+        <div class="slide" id="slide-4">
+            <div class="slide-content">
+                <h2>Como Funciona</h2>
+                <p><strong>1. Doação de Livros:</strong> Doe seus livros nos pontos de coleta dentro dos vagões.</p>
+                <p><strong>2. Localização dos Livros:</strong> Use o app para localizar livros disponíveis perto de você.</p>
+                <p><strong>3. Leitura e Compartilhamento:</strong> Pegue, leia e depois deixe o livro em outro vagão para que outros possam ler.</p>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-5">
+            <div class="slide-content">
+                <h2>O Aplicativo</h2>
+                <p>O app Leitura no Vagão conecta leitores aos livros disponíveis nos transportes públicos. Ele oferece:</p>
+                <ul style="text-align: left;">
+                    <li><b>Cadastro de usuários:</b> Que podem ser leitores, incentivadores ou doadores de livros.</li>
+                    <li><b>Mapa interativo:</b> Recurso para sabermos onde os livros estão e por onde já circularam.</li>
+                    <li>Histórico de leitura e doação de cada usuários.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-6">
+            <div class="slide-content">
+                <h2>Benefícios para a Comunidade</h2>
+                <p>Leitura no Vagão transforma o tempo gasto em transportes públicos em uma oportunidade para ler e compartilhar conhecimentos.</p>
+                <p><strong>Pontos:</strong></p>
+                <ul style="text-align: left;">
+                    <li>Acesso gratuito a livros.</li>
+                    <li>Estímulo à leitura.</li>
+                    <li>Construção de uma comunidade de leitores.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-7">
+            <div class="slide-content">
+                <h2>Como Participar</h2>
+                <p>Junte-se à nossa comunidade de leitores e doe livros, use o app para encontrar novos títulos e compartilhe essa ideia com amigos e familiares.</p>
+                <p><strong>Call to Action:</strong></p>
+                <p>Baixe o app e comece a ler hoje!</p>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-8">
+            <div class="slide-content">
+                <h2>Próximos Passos</h2>
+                <p>Planejamos expandir o Leitura no Vagão para novas cidades, estabelecer parcerias com editoras e bibliotecas, e continuar melhorando o aplicativo.</p>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-9">
+            <div class="slide-content">
+                <h2>Obrigado!</h2>
+                <p><strong>Instagram:</strong> @leituranovagao</p>
+
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="nav-button" id="prevButton" onclick="prevSlide()" disabled>&#8592; Anterior</button>
+            <button class="nav-button" id="nextButton" onclick="nextSlide()">Próximo &#8594;</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 9;
+
+        function showSlide(slideIndex) {
+            // Desabilita todos os slides primeiro
+            for (let i = 1; i <= totalSlides; i++) {
+                document.getElementById(`slide-${i}`).classList.remove('active');
+            }
+            // Habilita o slide atual
+            document.getElementById(`slide-${slideIndex}`).classList.add('active');
+
+            // Atualiza os botões de navegação
+            document.getElementById('prevButton').disabled = slideIndex === 1;
+            document.getElementById('nextButton').disabled = slideIndex === totalSlides;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                showSlide(currentSlide);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        }
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'ArrowRight') nextSlide();
+            if (event.key === 'ArrowLeft') prevSlide();
+        });
+
+        // Inicializa a apresentação mostrando o primeiro slide
+        showSlide(currentSlide);
+    </script>
+</body>
+</html>
