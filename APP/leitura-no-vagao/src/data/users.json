@@ -16,6 +16,14 @@
       "email": "usuario2@example.com",
       "password": "1234",
       "token": "token456"
+    },
+    {
+      "id": "3",
+      "username": "usuario3",
+      "firstName": "Usuário",
+      "avatar": "avatar3",
+      "email": "usuario3@example.com",
+      "password": "1234",
+      "token": "token456"
     }
 ]
-  
