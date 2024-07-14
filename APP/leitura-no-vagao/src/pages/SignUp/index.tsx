@@ -9,7 +9,8 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
-import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
+import { ALERT_TYPE, Dialog, AlertNotificationRoot } from 'react-native-alert-notification';
+import { addUser } from '../../services/SignUp/SignUpService';
 
 import { styles } from './styles';
 
@@ -26,7 +27,7 @@ export function SignUp() {
 
   const [errors, setErrors] = useState({ name: false, email: false, password: false, confirmPassword: false });
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     // Resetar erros
     setErrors({ name: false, email: false, password: false, confirmPassword: false });
 
@@ -63,14 +64,36 @@ export function SignUp() {
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      Toast.show({
+    try {
+      const newUser = {
+        id: '', // será preenchido pelo serviço
+        username: name,
+        firstName: name,
+        avatar: 'defaultAvatar',
+        email,
+        password,
+        token: 'tokenPlaceholder', // você pode gerar um token real aqui
+      };
+  
+      await addUser(newUser); // Salva o novo usuário
+      Dialog.show({
         type: ALERT_TYPE.SUCCESS,
         title: 'Cadastro Sucesso',
         textBody: `Bem-vindo, ${name}!`,
+        button: 'Fechar',
+        onHide: () => navigation.navigate('SignIn' as never), // Navega para a tela de login após fechar o diálogo
       });
-    }, 2000);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      Dialog.show({
+        type: ALERT_TYPE.DANGER,
+        title: 'Erro',
+        textBody: errorMessage,
+        button: 'Fechar',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

@@ -1,43 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Image,
-  Alert,
-  ActivityIndicator
-} from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation, useIsFocused } from '@react-navigation/native';
+import { useNavigation, useIsFocused, useFocusEffect } from '@react-navigation/native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { ALERT_TYPE, Dialog, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
+import { ALERT_TYPE, Dialog, AlertNotificationRoot } from 'react-native-alert-notification';
 
 import { styles } from './styles';
 import { useAuth } from '../../hooks/auth';
 
 export function SignIn() {
-  const [email, setEmail] = useState(''); // email
-  const [password, setPassword] = useState(''); // senha
-  const [isLoading, setIsLoading] = useState(false); // loop de carregamento
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false); // senha visivel ou não
-  const { signIn } = useAuth(); // Função de login
-  const navigation = useNavigation(); // Para navegação
-  const isFocused = useIsFocused(); // Para detectar se a tela está focada
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const { signIn } = useAuth();
+  const navigation = useNavigation();
 
   const [errors, setErrors] = useState({ email: false, password: false });
 
   const handleSignIn = async () => {
-    // Resetar erros
     setErrors({ email: false, password: false });
-
-    // Verifica se os campos estão vazios
     const newErrors = {
       email: !email,
       password: !password,
     };
 
-    // Mostra a caixa de erro pedindo que o usuário preencha todos os campos
     if (newErrors.email || newErrors.password) {
       setErrors(newErrors);
       Dialog.show({
@@ -57,7 +44,7 @@ export function SignIn() {
     } catch (error: any) {
       Dialog.show({
         type: ALERT_TYPE.DANGER,
-        title: 'Não foi possivel autenticar.',
+        title: 'Não foi possível autenticar.',
         textBody: error.message,
         button: 'Fechar',
       });
@@ -66,12 +53,14 @@ export function SignIn() {
     }
   };
 
-  // Força a animação a reproduzir sempre que a tela de login estiver focada
-  useEffect(() => {
-    if (isFocused) {
-      // Qualquer lógica de inicialização necessária quando a tela é focada
-    }
-  }, [isFocused]);
+  useFocusEffect(
+    React.useCallback(() => {
+      Dialog.hide();
+      setEmail('');
+      setPassword('');
+      setErrors({ email: false, password: false });
+    }, [])
+  );
 
   return (
     <AlertNotificationRoot>
