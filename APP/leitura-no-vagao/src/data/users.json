@@ -1,0 +1,29 @@
+[
+    {
+      "id": "1",
+      "username": "usuario1",
+      "firstName": "Usuário",
+      "avatar": "avatar1",
+      "email": "usuario1@example.com",
+      "password": "1234",
+      "token": "token123"
+    },
+    {
+      "id": "2",
+      "username": "usuario2",
+      "firstName": "Usuário",
+      "avatar": "avatar2",
+      "email": "usuario2@example.com",
+      "password": "1234",
+      "token": "token456"
+    },
+    {
+      "id": "3",
+      "username": "usuario3",
+      "firstName": "Usuário",
+      "avatar": "avatar3",
+      "email": "usuario3@example.com",
+      "password": "1234",
+      "token": "token456"
+    }
+]
