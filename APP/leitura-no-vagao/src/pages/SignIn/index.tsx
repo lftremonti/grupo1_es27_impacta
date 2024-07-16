@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation, useIsFocused, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { ALERT_TYPE, Dialog, AlertNotificationRoot } from 'react-native-alert-notification';
+import { Provider as PaperProvider } from 'react-native-paper';
 
 import { styles } from './styles';
 import { useAuth } from '../../hooks/auth';
+import CustomDialog from '../../components/CustomDialog';
 
 export function SignIn() {
   const [email, setEmail] = useState('');
@@ -15,8 +16,25 @@ export function SignIn() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const { signIn } = useAuth();
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
+  const [key, setKey] = useState(Math.random());
 
   const [errors, setErrors] = useState({ email: false, password: false });
+  const [visible, setVisible] = useState<boolean>(false);
+  const [dialogTitle, setDialogTitle] = useState<string>('');
+  const [dialogMessage, setDialogMessage] = useState<string>('');
+  const [dialogType, setDialogType] = useState<'alert' | 'warning' | 'success' | 'fail'>('alert');
+
+  const showDialog = (title: string, message: string, type: 'alert' | 'warning' | 'success' | 'fail') => {
+    setDialogTitle(title);
+    setDialogMessage(message);
+    setDialogType(type);
+    setVisible(true);
+  };
+
+  const hideDialog = () => {
+    setVisible(false);
+  };
 
   const handleSignIn = async () => {
     setErrors({ email: false, password: false });
@@ -27,12 +45,7 @@ export function SignIn() {
 
     if (newErrors.email || newErrors.password) {
       setErrors(newErrors);
-      Dialog.show({
-        type: ALERT_TYPE.WARNING,
-        title: 'Campos obrigatórios',
-        textBody: 'Por favor, preencha todos os campos!',
-        button: 'Fechar',
-      });
+      showDialog('Campos Obrigatorios', 'Por favor, preencha todos os campos!', 'fail');
       return;
     }
 
@@ -42,29 +55,31 @@ export function SignIn() {
       await signIn(email, password);
       Alert.alert('Login Success', `Welcome back, ${email}!`);
     } catch (error: any) {
-      Dialog.show({
-        type: ALERT_TYPE.DANGER,
-        title: 'Não foi possível autenticar.',
-        textBody: error.message,
-        button: 'Fechar',
-      });
+      showDialog('Error', 'Não foi possível autenticar.', 'fail');
     } finally {
       setIsLoading(false);
     }
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
-      Dialog.hide();
+  useEffect(() => {
+    if (isFocused) {
       setEmail('');
       setPassword('');
       setErrors({ email: false, password: false });
-    }, [])
-  );
+      setKey(Math.random());
+    }
+  }, [isFocused]);
 
   return (
-    <AlertNotificationRoot>
-      <View style={styles.container}>
+    <PaperProvider>
+      <CustomDialog
+        visible={visible}
+        hideDialog={hideDialog}
+        title={dialogTitle}
+        message={dialogMessage}
+        type={dialogType}
+      />
+      <View key={key} style={styles.container}>
         <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()}>
           <Text style={styles.welcome}>Bem-Vindo</Text>
           <Text style={styles.instructions}>Por favor, insira seu email e sua senha para acessar sua conta</Text>
@@ -140,6 +155,6 @@ export function SignIn() {
           </Animated.View>
         </Animated.View>
       </View>
-    </AlertNotificationRoot>
+    </PaperProvider>
   );
 }

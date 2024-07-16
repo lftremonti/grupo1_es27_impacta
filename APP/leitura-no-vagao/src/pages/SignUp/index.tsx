@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  ActivityIndicator 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
-import { ALERT_TYPE, Dialog, AlertNotificationRoot } from 'react-native-alert-notification';
 import { addUser } from '../../services/SignUp/SignUpService';
+import { Provider as PaperProvider } from 'react-native-paper';
 
 import { styles } from './styles';
+import CustomDialog from '../../components/CustomDialog';
 
 export function SignUp() {
   const [name, setName] = useState<string>('');
@@ -22,15 +23,32 @@ export function SignUp() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState<boolean>(false);
-  
-  const navigation = useNavigation();
 
+  const navigation = useNavigation();
   const [errors, setErrors] = useState({ name: false, email: false, password: false, confirmPassword: false });
+
+  const [visible, setVisible] = useState<boolean>(false);
+  const [dialogTitle, setDialogTitle] = useState<string>('');
+  const [dialogMessage, setDialogMessage] = useState<string>('');
+  const [dialogType, setDialogType] = useState<'alert' | 'warning' | 'success' | 'fail'>('alert');
+
+  const showDialog = (title: string, message: string, type: 'alert' | 'warning' | 'success' | 'fail') => {
+    setDialogTitle(title);
+    setDialogMessage(message);
+    setDialogType(type);
+    setVisible(true);
+  };
+
+  const hideDialog = () => {
+    setVisible(false);
+    if (dialogType === 'success') {
+      navigation.navigate('SignIn' as never);
+    }
+  };
 
   const handleSignUp = async () => {
     // Resetar erros
     setErrors({ name: false, email: false, password: false, confirmPassword: false });
-
     // Verifica se os campos estão vazios
     const newErrors = {
       name: !name,
@@ -39,26 +57,16 @@ export function SignUp() {
       confirmPassword: !confirmPassword
     };
 
-    //mostra a caixa de erro pedindo que o usuario não preencheu todos os campos
+    // Mostrar a caixa de erro pedindo que o usuário não preencheu todos os campos
     if (newErrors.name || newErrors.email || newErrors.password || newErrors.confirmPassword) {
       setErrors(newErrors);
-      Dialog.show({
-        type: ALERT_TYPE.WARNING,
-        title: 'Campos obrigatórios',
-        textBody: 'Por favor, preencha todos os campos!',
-        button: 'Fechar',
-      });
+      showDialog('Campos Obrigatórios', 'Por favor, preencha todos os campos!', 'fail');
       return;
     }
-    
-    // Verifica se as senhas coincidem
+
+    // Verificar se as senhas coincidem
     if (password !== confirmPassword) {
-      Dialog.show({
-        type: ALERT_TYPE.WARNING,
-        title: 'Ops...',
-        textBody: 'As senhas não coincidem!\nPor favor, tente novamente.',
-        button: 'Fechar',
-      });
+      showDialog('Ops...', 'As senhas não coincidem!\nPor favor, tente novamente.', 'warning');
       return;
     }
 
@@ -66,38 +74,34 @@ export function SignUp() {
 
     try {
       const newUser = {
-        id: '', // será preenchido pelo serviço
+        id: '', // Será preenchido pelo serviço
         username: name,
         firstName: name,
         avatar: 'defaultAvatar',
         email,
         password,
-        token: 'tokenPlaceholder', // você pode gerar um token real aqui
+        token: 'tokenPlaceholder', // Você pode gerar um token real aqui
       };
-  
-      await addUser(newUser); // Salva o novo usuário
-      Dialog.show({
-        type: ALERT_TYPE.SUCCESS,
-        title: 'Cadastro Sucesso',
-        textBody: `Bem-vindo, ${name}!`,
-        button: 'Fechar',
-        onHide: () => navigation.navigate('SignIn' as never), // Navega para a tela de login após fechar o diálogo
-      });
+
+      await addUser(newUser); // Salvar o novo usuário
+      showDialog('Cadastro realizado com sucesso', `Bem-vindo, ${name}!\nAgora e possivel realizar o login 😄`, 'success');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      Dialog.show({
-        type: ALERT_TYPE.DANGER,
-        title: 'Erro',
-        textBody: errorMessage,
-        button: 'Fechar',
-      });
+      showDialog('Erro', `Lamentamos pelo ocorrido. Por favor, tente novamente.`, 'fail');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <AlertNotificationRoot>
+    <PaperProvider>
+      <CustomDialog
+        visible={visible}
+        hideDialog={hideDialog}
+        title={dialogTitle}
+        message={dialogMessage}
+        type={dialogType}
+      />
       <View style={styles.container}>
         <TouchableOpacity onPress={() => navigation.navigate('SignIn' as never)} style={styles.backButton}>
           <Icon name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
@@ -105,7 +109,7 @@ export function SignUp() {
 
         <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()}>
           <Text style={styles.welcome}>Vamos começar sua jornada!</Text>
-          <Text style={styles.instructions}>Por favor, preencha todos os campo para criamos sua conta</Text>
+          <Text style={styles.instructions}>Por favor, preencha todos os campos para criar sua conta</Text>
 
           <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
             <Text style={styles.label}>Nome</Text>
@@ -182,6 +186,6 @@ export function SignUp() {
 
         </Animated.View>
       </View>
-    </AlertNotificationRoot>
+    </PaperProvider>
   );
 }
