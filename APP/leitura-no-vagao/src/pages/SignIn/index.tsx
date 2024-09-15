@@ -113,7 +113,7 @@ export function SignIn() {
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(650).duration(5000).springify()}>
-            <TouchableOpacity onPress={() => Alert.alert('Esqueci a senha', 'Link para resetar senha enviado')}>
+            <TouchableOpacity onPress={() => navigation.navigate('EmailInputScreen' as never)}>
               <Text style={styles.forgotPassword}>Esqueceu sua senha? <Text style={styles.forgotPasswordLink}>Clique aqui</Text></Text>
             </TouchableOpacity>
           </Animated.View>
