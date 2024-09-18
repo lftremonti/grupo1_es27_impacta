@@ -3,6 +3,9 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 dotenv.config();
 
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+
 // Importa o middleware de tratamento de erros personalizado.
 const errorHandler = require('./middlewares/errorHandler');
 
@@ -13,7 +16,8 @@ app.use(cors());
 app.use(express.json());
 
 //Rotas
-//
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 //Middleware de tratamento de erros. Se qualquer rota ou operação lançar um erro, este middleware será chamado.
 app.use(errorHandler);
