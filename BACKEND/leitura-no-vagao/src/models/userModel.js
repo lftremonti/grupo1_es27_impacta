@@ -4,7 +4,7 @@ const pool = require('../config/db');
 // Função para buscar um usuário pelo email
 const getUserByEmail = async (email) => {
     try {
-        const query = `SELECT * FROM ${process.env.DB_SCHEMA}.usuarios WHERE email = $1`;
+        const query = `SELECT * FROM ${process.env.DB_SCHEMA}.usuarios WHERE email = $1 AND ativo = 'Y'`;
         const result = await pool.query(query, [email]);
         return result; // Deve retornar um objeto com uma propriedade `rows`
     } catch (error) {
@@ -16,7 +16,7 @@ const getUserByEmail = async (email) => {
 // Função para buscar um usuário pelo email
 const getUserByPhone = async (telefone) => {
     try {
-        const query = `SELECT * FROM ${process.env.DB_SCHEMA}.usuarios WHERE telefone = $1`;
+        const query = `SELECT * FROM ${process.env.DB_SCHEMA}.usuarios WHERE telefone = $1 `;
         const result = await pool.query(query, [telefone]);
         return result; // Deve retornar um objeto com uma propriedade `rows`
     } catch (error) {
@@ -28,7 +28,7 @@ const getUserByPhone = async (telefone) => {
 // Função para buscar um usuário pelo id
 const findById = async (id) => {
     try{
-        const result = await pool.query(`SELECT * FROM ${process.env.DB_SCHEMA}.usuarios WHERE ad_usuario_id = $1`, [id]);
+        const result = await pool.query(`SELECT * FROM ${process.env.DB_SCHEMA}.usuarios WHERE ad_usuario_id = $1 AND ativo = 'Y'`, [id]);
         return result.rows[0];
     } catch {
         console.error('Error create user: ', error);
@@ -50,4 +50,18 @@ const createUser = async (user) => {
     }
 };
 
-module.exports = { getUserByEmail, createUser, findById, getUserByPhone};
+//Atualizar a senha do usuario pelo id
+const updatePasswordById = async (userid, newPassword) => {
+    try {
+        const result = await pool.query(
+            `UPDATE ${process.env.DB_SCHEMA}.usuarios SET senha = $1 WHERE ad_usuario_id = $2`,
+            [newPassword, userid]
+        );
+        return result.rows[0];
+    } catch {
+        console.error('Error create user: ', error);
+        throw error;
+    }
+}
+
+module.exports = { getUserByEmail, createUser, findById, getUserByPhone, updatePasswordById};

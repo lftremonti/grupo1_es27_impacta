@@ -4,7 +4,7 @@ const pool = require('../config/db');
 // Função para buscar a role pelo id
 const findById = async (id) => {
     try{
-        const result = await pool.query(`SELECT * FROM ${process.env.DB_SCHEMA}.roles WHERE ad_role_id = $1`, [id]);
+        const result = await pool.query(`SELECT * FROM ${process.env.DB_SCHEMA}.roles WHERE ad_role_id = $1 AND ativo = 'Y'`, [id]);
         return result.rows[0];
     } catch {
         console.error('Error roles: ', error);
@@ -16,7 +16,7 @@ const findById = async (id) => {
 // Função para buscar a role pelo nome
 const findByName = async (nome) => {
     try{
-        const result = await pool.query(`SELECT * FROM ${process.env.DB_SCHEMA}.roles WHERE nome = $1`, [nome]);
+        const result = await pool.query(`SELECT * FROM ${process.env.DB_SCHEMA}.roles WHERE nome = $1 AND ativo = 'Y'`, [nome]);
         return result.rows[0];
     } catch {
         console.error('Error roles: ', error);
