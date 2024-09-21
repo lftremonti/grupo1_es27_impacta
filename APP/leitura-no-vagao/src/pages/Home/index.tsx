@@ -13,7 +13,7 @@ export function Home() {
   return (
     <View style={styles.container}>
       <Text style={styles.welcomeText}>Bem-vindo à tela Home</Text>
-      <Button title="Sair"  onPress={handleSignOut} />
+      <Button title="Sair" onPress={handleSignOut} />
     </View>
   );
 }

@@ -22,7 +22,7 @@ const login = async (req, res, next) => {
         const user = await userModel.getUserByEmail(email);
 
         // Verifica se o usuário existe
-        if (!user) {
+        if (!user || user.rows.length === 0) {
             return next(new ApiError(401, 'Email ou senha inválidos.'));
         }
 
@@ -38,7 +38,7 @@ const login = async (req, res, next) => {
         }
 
         // Gera o token JWT
-        const token = jwt.sign({ userId: user.ad_user_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user.ad_user_id }, process.env.JWT_SECRET, { expiresIn: '3h' });
 
         const userResult = user.rows[0];
 

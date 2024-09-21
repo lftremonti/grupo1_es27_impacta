@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Leitura no vagão",
-    "slug": "Leitura no vagão",
+    "name": "leituranovagao",
+    "slug": "leituranovagao",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,6 +15,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.grupo1.leituranovagao",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -22,6 +23,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "URL_API": "http://192.168.2.106:3333"
     }
   }
 }

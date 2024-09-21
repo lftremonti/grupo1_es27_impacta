@@ -1,103 +1,91 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import users from '../data/users.json';
-
-const COLLECTION_USERS = '@appname:users';
-const TOKEN_EXPIRATION_TIME = 60 * 60 * 1000; // 1 hora em milissegundos
-
-type User = {
-  id: string;
-  username: string;
-  firstName: string;
-  avatar: string;
-  email: string;
-  token: string;
-  tokenExpiration: number; // Adicionamos a expiração do token
-};
+import { User } from '../types/User';
+import { signInService } from '../services/SignIn/SignInService';
+import { checkTokenValidity } from '../utils/checkTokenValidity';
 
 type AuthContextData = {
   user: User | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (result: any) => Promise<User>;
+  singInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>;
 };
 
-type AuthProviderProps = {
-  children: ReactNode;
-};
+const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
-export const AuthContext = createContext({} as AuthContextData);
-
-function AuthProvider({ children }: AuthProviderProps) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
 
-  async function signIn(email: string, password: string) {
-    try {
-      setLoading(true);
+  useEffect(() => {
 
-      const foundUser = users.find(user => user.email === email && user.password === password);
+    let interval: NodeJS.Timeout;
+    
+    const loadUserData = async () => {
+      const isTokenValid = await checkTokenValidity();
 
-      if (!foundUser) {
-        throw new Error('Dados de acesso inválidos.\n Por favor tente novamente.');
+      if(isTokenValid){
+        const storedUser = await AsyncStorage.getItem('userData');
+        if(storedUser){
+          setUser(JSON.parse(storedUser));
+        }
+      } else {
+        await AsyncStorage.clear();
+        setUser(null)
       }
+    };
 
-      const userWithToken = {
-        ...foundUser,
-        tokenExpiration: Date.now() + TOKEN_EXPIRATION_TIME,
-      };
+    loadUserData();
 
-      await AsyncStorage.setItem(COLLECTION_USERS, JSON.stringify(userWithToken));
-      setUser(userWithToken);
-    } catch (error: any) {
-      throw new Error(error.message);
-    } finally {
-      setLoading(false);
-    }
-  }
+    // Verifica a validade do token a cada 5 minutos (300000 ms)
+    interval = setInterval(async () => {
+      const isTokenValid = await checkTokenValidity();
+      if (!isTokenValid) {
+        await AsyncStorage.clear();
+        setUser(null);
+      }
+    }, 300000); // a cada 5 minutos
 
-  async function signOut() {
-    await AsyncStorage.removeItem(COLLECTION_USERS);
+    return () => clearInterval(interval); // Limpa o intervalo ao desmontar o componente
+  }, [])
+
+  const signOut = async () => {
+    await AsyncStorage.clear();
     setUser(null);
   }
 
-  async function loadUserStorageData() {
-    const storage = await AsyncStorage.getItem(COLLECTION_USERS);
-
-    if (storage) {
-      const userLogged = JSON.parse(storage) as User;
-      setUser(userLogged);
-      checkTokenExpiration(userLogged);
+  const signIn = async (result: any) => {
+    const userData: User = {
+      id: result.data.user.ad_usuario_id,
+      nome: result.data.user.nome,
+      email: result.data.user.email,
+      ativo: result.data.user.ativo,
+      telefone: result.data.user.telefone,
+      criado: result.data.user.criado,
+      imagemId: result.data.user.imagemid,
+      enderecoId: result.data.user.enderecoid,
+      roleid: result.data.user.role.roleid,
+      role: result.data.user.role.role
     }
+
+    setUser(userData);
+    
+    await AsyncStorage.setItem('userToken', result.data.token);
+    await AsyncStorage.setItem('userData', JSON.stringify(userData));
+    
+    return userData
   }
 
-  function checkTokenExpiration(user: User) {
-    if (user.tokenExpiration && Date.now() > user.tokenExpiration) {
-      signOut();
-    }
+  const singInWithGoogle = async () => {
+    console.log("EEEEEE")
   }
-
-  useEffect(() => {
-    loadUserStorageData();
-    const interval = setInterval(() => {
-      if (user) {
-        checkTokenExpiration(user);
-      }
-    }, 10000); // Verifica a cada 10 segundos
-
-    return () => clearInterval(interval);
-  }, [user]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, signIn, singInWithGoogle, signOut }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-function useAuth() {
-  const context = useContext(AuthContext);
-  return context;
+export function useAuth() {
+  return useContext(AuthContext)
 }
-
-export { AuthProvider, useAuth };

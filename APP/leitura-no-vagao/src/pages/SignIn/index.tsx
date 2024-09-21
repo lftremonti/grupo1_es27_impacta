@@ -8,6 +8,8 @@ import { Provider as PaperProvider } from 'react-native-paper';
 import { styles } from './styles';
 import { useAuth } from '../../hooks/auth';
 import CustomDialog from '../../components/CustomDialog';
+import { signInService } from '../../services/SignIn/SignInService';
+
 
 export function SignIn() {
   const [email, setEmail] = useState('');
@@ -52,8 +54,24 @@ export function SignIn() {
     setIsLoading(true);
 
     try {
-      await signIn(email, password);
-      Alert.alert('Login Success', `Welcome back, ${email}!`);
+      const result = await signInService(email, password);
+
+      if(result.type === 'success' && result.status === 200){
+        const userData = await signIn(result);
+
+        showDialog('Login realizado com sucesso', `Bem vindo, ${userData.nome}!`, 'success');
+
+        // Adiciona um delay antes de navegar para a tela "Home"
+        setTimeout(() => {
+          navigation.navigate('Home' as never); // Navega após sucesso
+        }, 200000); // Delay de 2 segundos para exibir o diálogo
+      } else if (result.status === 500) {
+        console.log('Error: ', result.message);
+        showDialog('Error', 'Não foi possivel autenticar.', 'fail');
+      } else{
+        console.log('Error: ', result.message);
+        showDialog('Error', result.message || 'Não foi possivel autenticar.', 'fail');
+      }
     } catch (error: any) {
       showDialog('Error', 'Não foi possível autenticar.', 'fail');
     } finally {
