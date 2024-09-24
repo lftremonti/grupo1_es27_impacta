@@ -147,4 +147,43 @@ const resetPassword = async (req, res, next) => {
     }
 };
 
-module.exports = { login, sendResetCode, verifyResetCode, resetPassword };
+const loginWithGoogleId = async (req, res, next) => {
+    try {
+        const { email, idAuthGoogle } = req.body;
+
+        // Verifica se o email e o idAuthGoogle foram fornecidos
+        if (!email || !idAuthGoogle) {
+            return next(new ApiError(400, 'E-mail e ID do Google são obrigatórios.'));
+        }
+
+        // Busca o usuário pelo email
+        const user = await userModel.getUserByEmail(email);
+
+        // Verifica se o usuário existe
+        if (!user || user.rows.length === 0) {
+            return next(new ApiError(401, 'Usuário não encontrado.'));
+        }
+
+        const userResult = user.rows[0];
+
+        // Aqui você deve verificar se o ID do Google corresponde ao usuário
+        // Para simplificar, vamos assumir que temos um campo id_google na tabela do usuário
+        if (userResult.id_google !== idAuthGoogle) {
+            return next(new ApiError(401, 'ID do Google não corresponde ao usuário.'));
+        }
+
+        // Gera o token JWT
+        const token = jwt.sign({ userId: userResult.ad_user_id }, process.env.JWT_SECRET, { expiresIn: '3h' });
+
+        // Buscar a role do usuário
+        const userRole = await userRoles.getUserRole(userResult.ad_usuario_id);
+
+        // Retorna o token e os dados do usuário (sem a senha)
+        return successResponse(res, 200, 'Login realizado com sucesso!', { token, user: { ...userResult, role: userRole } });
+    } catch (err) {
+        next(new ApiError(500, 'Server error', err.message));
+    }
+};
+
+
+module.exports = { login, sendResetCode, verifyResetCode, resetPassword, loginWithGoogleId };

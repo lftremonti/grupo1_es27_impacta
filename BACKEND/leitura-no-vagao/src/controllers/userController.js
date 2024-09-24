@@ -51,4 +51,19 @@ const getUserById = async (req, res, next) => {
     }
 };
 
-module.exports = { create, getUserById };
+const getUserByEmail = async (req, res, next) => {
+    const { email } = req.params;
+    try {
+        //Busca o usuario pelo id
+        const user = await userModel.getUserByEmail(email);
+
+        //Caso não encontre o usuario devolve a resposta do erro
+        if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+
+        return successResponse(res, 200, 'Usuario Encontrado!', { user: user.rows[0] });
+    } catch (error) {
+        next(new ApiError(500, 'Server error', err.message));
+    }
+};
+
+module.exports = { create, getUserById, getUserByEmail };
