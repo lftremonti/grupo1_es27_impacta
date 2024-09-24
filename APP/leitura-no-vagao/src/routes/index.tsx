@@ -2,14 +2,16 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { AppRoutes } from './app.routes';
 import { AuthRoutes } from './auth.routes';
-import { useAuth } from '../hooks/auth';
+import { useAuthSignIn } from '../hooks/auth';
+import { useAuth } from '@clerk/clerk-expo';
 
 export function Routes() {
-  const { user } = useAuth();
-  console.log("Teste: ", user)
+  const { user } = useAuthSignIn();
+  const { isSignedIn, isLoaded } = useAuth();
+
   return (
     <NavigationContainer>
-      {user && user.id ? <AppRoutes /> : <AuthRoutes />}
+      {isSignedIn || (user && user.id) ? <AppRoutes /> : <AuthRoutes />}
     </NavigationContainer>
   );
 }

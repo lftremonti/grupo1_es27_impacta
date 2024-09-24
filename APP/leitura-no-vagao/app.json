@@ -2,6 +2,7 @@
   "expo": {
     "name": "leituranovagao",
     "slug": "leituranovagao",
+    "scheme": "leituranovagao",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

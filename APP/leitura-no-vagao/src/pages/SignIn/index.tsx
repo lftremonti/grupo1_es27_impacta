@@ -4,22 +4,26 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Provider as PaperProvider } from 'react-native-paper';
-
+import { useOAuth } from "@clerk/clerk-expo"
 import { styles } from './styles';
-import { useAuth } from '../../hooks/auth';
+import { useAuthSignIn } from '../../hooks/auth';
 import CustomDialog from '../../components/CustomDialog';
 import { signInService } from '../../services/SignIn/SignInService';
+import * as Liking from 'expo-linking'
+import * as WebBrowser from "expo-web-browser"
 
+WebBrowser.maybeCompleteAuthSession()
 
 export function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn } = useAuthSignIn();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const [key, setKey] = useState(Math.random());
+  const googleOAuth = useOAuth({strategy: "oauth_google"})
 
   const [errors, setErrors] = useState({ email: false, password: false });
   const [visible, setVisible] = useState<boolean>(false);
@@ -79,12 +83,37 @@ export function SignIn() {
     }
   };
 
+  async function onGoogleSingIn() {
+    try {
+      setIsLoading(true)
+
+      const redirectUrl = Liking.createURL("/auth")
+      const oAuthFlow = await googleOAuth.startOAuthFlow( { redirectUrl } )
+
+      if(oAuthFlow.authSessionResult?.type === "success"){
+        if(oAuthFlow.setActive){
+          await oAuthFlow.setActive({ session: oAuthFlow.createdSessionId })
+        }
+      }else{
+        setIsLoading(false)
+      }
+    } catch (error) {
+      console.log(error)
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
     if (isFocused) {
       setEmail('');
       setPassword('');
       setErrors({ email: false, password: false });
       setKey(Math.random());
+    }
+
+    WebBrowser.warmUpAsync()
+    return () => {
+      WebBrowser.coolDownAsync()
     }
   }, [isFocused]);
 
@@ -138,11 +167,11 @@ export function SignIn() {
 
           <Animated.View entering={FadeInDown.delay(850).duration(5000).springify()}>
             {isLoading ? (
-              <TouchableOpacity style={styles.button}>
+              <TouchableOpacity disabled={isLoading} style={styles.button}>
                 <ActivityIndicator size="large" color="#FFFFFF" />
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity style={styles.button} onPress={handleSignIn}>
+              <TouchableOpacity style={styles.button} onPress={handleSignIn} disabled={isLoading}>
                 <Text style={styles.buttonText}>Entrar</Text>
               </TouchableOpacity>
             )}
@@ -157,7 +186,7 @@ export function SignIn() {
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(1050).duration(5000).springify()}>
-            <TouchableOpacity style={styles.googleButton} onPress={() => Alert.alert('Login com Google')}>
+            <TouchableOpacity style={styles.googleButton} disabled={isLoading} onPress={onGoogleSingIn}>
               <View style={styles.googleButtonContent}>
                 <Image source={require('../../assets/googleIcons.png')} style={styles.googleIcon} />
                 <Text style={styles.googleButtonText}>Entrar com o Google</Text>

@@ -1,20 +1,20 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '../types/User';
-import { signInService } from '../services/SignIn/SignInService';
 import { checkTokenValidity } from '../utils/checkTokenValidity';
+import { useAuth, useUser } from "@clerk/clerk-expo";
 
 type AuthContextData = {
   user: User | null;
   signIn: (result: any) => Promise<User>;
-  singInWithGoogle: () => Promise<void>
-  signOut: () => Promise<void>;
+  signOutUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const { signOut } = useAuth();
 
   useEffect(() => {
 
@@ -48,9 +48,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval); // Limpa o intervalo ao desmontar o componente
   }, [])
 
-  const signOut = async () => {
+  const signOutUser = async () => {
     await AsyncStorage.clear();
     setUser(null);
+    signOut();
   }
 
   const signIn = async (result: any) => {
@@ -75,17 +76,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return userData
   }
 
-  const singInWithGoogle = async () => {
-    console.log("EEEEEE")
-  }
-
   return (
-    <AuthContext.Provider value={{ user, signIn, singInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, signIn, signOutUser }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
+export function useAuthSignIn() {
   return useContext(AuthContext)
 }
