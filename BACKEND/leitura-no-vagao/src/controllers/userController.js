@@ -6,7 +6,7 @@ const { successResponse } = require('../utils/ApiResponse');
 
 const create = async (req, res, next) => {
     try {
-        const { nome, email, telefone, senha } = req.body;
+        const { nome, email, telefone, senha, idAuthGoogle } = req.body;
 
         // Verificar se o email já existe
         const existingUserByEmail = await userModel.getUserByEmail(email);
@@ -20,11 +20,19 @@ const create = async (req, res, next) => {
             return next(new ApiError(400, 'O número de telefone já está cadastrado!'));
         }
 
+        // Verificar se o idAuthGoogle já existe
+        if (idAuthGoogle) {
+            const existingUserByGoogleId = await userModel.getUserByGoogleId(idAuthGoogle);
+            if (existingUserByGoogleId.rows[0]) {
+                return next(new ApiError(400, 'Este ID do Google já está associado a um usuário!'));
+            }
+        }
+
         //Criptografa a senha
         const hashedPassword = await bcrypt.hash(senha, 10);
 
         //Entra na model para salvar o usuario
-        const newUser = await userModel.createUser({ nome, email, telefone, senha: hashedPassword });
+        const newUser = await userModel.createUser({ nome, email, telefone, senha: hashedPassword, idAuthGoogle});
         
         // Associar a role padrão (Usuário Padrão) ao novo usuário
         const role = await userRoles.findByName("Usuário Padrão");
@@ -66,4 +74,23 @@ const getUserByEmail = async (req, res, next) => {
     }
 };
 
-module.exports = { create, getUserById, getUserByEmail };
+
+const checkUserByEmail = async (req, res, next) => {
+    const { email } = req.params;
+    try {
+        // Busca o usuário pelo email
+        const user = await userModel.getUserByEmail(email);
+
+        // Retorna um objeto com a propriedade exists
+        if (!user) {
+            return res.status(200).json({ exists: false }); // User not found
+        }
+
+        return res.status(200).json({ exists: true, user: user.rows[0] }); // User found
+    } catch (error) {
+        next(new ApiError(500, 'Server error', error.message));
+    }
+};
+
+
+module.exports = { create, getUserById, getUserByEmail, checkUserByEmail };

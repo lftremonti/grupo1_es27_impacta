@@ -1,9 +1,9 @@
 import config from "../../config/config";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStorage from "expo-secure-store";
 
 export async function getUserByEmailService(email: string) {
     try {
-        const token = await AsyncStorage.getItem('userToken');
+        const token = await SecureStorage.getItemAsync('userToken');
         
         // Define os headers dinamicamente com base no token
         const headers: HeadersInit = {
@@ -22,6 +22,7 @@ export async function getUserByEmailService(email: string) {
         }
 
         const result = await response.json();
+        console.log("result", result)
         return result;
     } catch (error) {
         console.log(`Error ao consultar o email do usuario no banco: ${config.BASE_URL}`, error);

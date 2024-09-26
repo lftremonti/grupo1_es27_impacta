@@ -11,6 +11,8 @@ import CustomDialog from '../../components/CustomDialog';
 import { signInService } from '../../services/SignIn/SignInService';
 import * as Liking from 'expo-linking'
 import * as WebBrowser from "expo-web-browser"
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
 WebBrowser.maybeCompleteAuthSession()
 
@@ -61,14 +63,27 @@ export function SignIn() {
       const result = await signInService(email, password);
 
       if(result.type === 'success' && result.status === 200){
-        const userData = await signIn(result);
+        // Salvando os dados do usuário no SecureStore 
+        try {
+          const userData = await signIn(result);
+          await SecureStore.setItemAsync('userData', JSON.stringify(userData));
+          await SecureStore.setItemAsync('userToken', result.data.token);
+          console.log('Dados do usuário salvos com sucesso.');
+  
+          // Garantindo que os dados foram salvos antes de navegar
+          const storedUserData = await SecureStore.getItemAsync('userData');
+          console.log('storedUserData: ', storedUserData);
 
-        showDialog('Login realizado com sucesso', `Bem vindo, ${userData.nome}!`, 'success');
-
-        // Adiciona um delay antes de navegar para a tela "Home"
-        setTimeout(() => {
-          navigation.navigate('Home' as never); // Navega após sucesso
-        }, 200000); // Delay de 2 segundos para exibir o diálogo
+          if (storedUserData) {
+            // Navegar para a tela "Home" apenas depois de salvar o token
+            navigation.navigate('Home' as never);
+          } else {
+            showDialog('Erro', 'Não foi possível carregar os dados do usuário salvos.', 'fail');
+          }
+        } catch (storageError) {
+          console.error('Erro ao salvar os dados do usuário: ', storageError);
+          showDialog('Erro', 'Não foi possível salvar os dados do usuário.', 'fail');
+        }
       } else if (result.status === 500) {
         console.log('Error: ', result.message);
         showDialog('Error', 'Não foi possivel autenticar.', 'fail');
@@ -186,12 +201,20 @@ export function SignIn() {
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(1050).duration(5000).springify()}>
-            <TouchableOpacity style={styles.googleButton} disabled={isLoading} onPress={onGoogleSingIn}>
-              <View style={styles.googleButtonContent}>
-                <Image source={require('../../assets/googleIcons.png')} style={styles.googleIcon} />
-                <Text style={styles.googleButtonText}>Entrar com o Google</Text>
-              </View>
-            </TouchableOpacity>
+            {isLoading ? (
+              <TouchableOpacity style={styles.googleButton} disabled={isLoading} onPress={onGoogleSingIn}>
+                <View style={styles.googleButtonContent}>
+                  <ActivityIndicator size="large" color="#FFFFFF" />
+                </View>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={styles.googleButton} disabled={isLoading} onPress={onGoogleSingIn}>
+                <View style={styles.googleButtonContent}>
+                  <Image source={require('../../assets/googleIcons.png')} style={styles.googleIcon} />
+                  <Text style={styles.googleButtonText}>Entrar com o Google</Text>
+                </View>
+              </TouchableOpacity>
+            )}
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(1050).duration(5000).springify()}>

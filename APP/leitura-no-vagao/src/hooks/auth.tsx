@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import * as SecureStore from 'expo-secure-store';
 import { User } from '../types/User';
 import { checkTokenValidity } from '../utils/checkTokenValidity';
-import { useAuth, useUser } from "@clerk/clerk-expo";
+import { useAuth } from "@clerk/clerk-expo";
 
 type AuthContextData = {
   user: User | null;
@@ -17,20 +17,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { signOut } = useAuth();
 
   useEffect(() => {
-
     let interval: NodeJS.Timeout;
-    
+
     const loadUserData = async () => {
       const isTokenValid = await checkTokenValidity();
 
-      if(isTokenValid){
-        const storedUser = await AsyncStorage.getItem('userData');
-        if(storedUser){
+      if (isTokenValid) {
+        const storedUser = await SecureStore.getItemAsync('userData');
+        if (storedUser) {
           setUser(JSON.parse(storedUser));
         }
       } else {
-        await AsyncStorage.clear();
-        setUser(null)
+        await SecureStore.deleteItemAsync('userData');
+        await SecureStore.deleteItemAsync('userToken');
+        setUser(null);
       }
     };
 
@@ -40,19 +40,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     interval = setInterval(async () => {
       const isTokenValid = await checkTokenValidity();
       if (!isTokenValid) {
-        await AsyncStorage.clear();
+        await SecureStore.deleteItemAsync('userData');
+        await SecureStore.deleteItemAsync('userToken');
         setUser(null);
       }
     }, 300000); // a cada 5 minutos
 
     return () => clearInterval(interval); // Limpa o intervalo ao desmontar o componente
-  }, [])
+  }, []);
 
   const signOutUser = async () => {
-    await AsyncStorage.clear();
+    await SecureStore.deleteItemAsync('userData');
+    await SecureStore.deleteItemAsync('userToken');
     setUser(null);
     signOut();
-  }
+  };
 
   const signIn = async (result: any) => {
     const userData: User = {
@@ -65,16 +67,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       imagemId: result.data.user.imagemid,
       enderecoId: result.data.user.enderecoid,
       roleid: result.data.user.role.roleid,
-      role: result.data.user.role.role
-    }
+      role: result.data.user.role.role,
+    };
 
     setUser(userData);
-    
-    await AsyncStorage.setItem('userToken', result.data.token);
-    await AsyncStorage.setItem('userData', JSON.stringify(userData));
-    
-    return userData
-  }
+
+    return userData;
+  };
 
   return (
     <AuthContext.Provider value={{ user, signIn, signOutUser }}>
@@ -84,5 +83,5 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useAuthSignIn() {
-  return useContext(AuthContext)
+  return useContext(AuthContext);
 }

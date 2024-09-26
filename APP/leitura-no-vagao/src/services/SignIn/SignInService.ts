@@ -1,4 +1,5 @@
 import config from "../../config/config";
+import * as SecureStorage from "expo-secure-store";
 
 export async function signInService(email: string, senha: string) {
     try {
@@ -20,10 +21,13 @@ export async function signInService(email: string, senha: string) {
 
 export async function checkUserExistsService(email: string) {
     try {
-        const response = await fetch(`${config.BASE_URL}/api/users/${email}`, {
+        const token = await SecureStorage.getItemAsync('userToken');
+
+        const response = await fetch(`${config.BASE_URL}/api/users/checkemail/${email}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token || process.env.BYPASS_TOKEN_KEY}`,
             },
         });
 

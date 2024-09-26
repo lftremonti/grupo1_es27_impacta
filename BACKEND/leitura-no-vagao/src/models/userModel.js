@@ -40,8 +40,8 @@ const findById = async (id) => {
 const createUser = async (user) => {
     try {
         const result = await pool.query(
-            `INSERT INTO ${process.env.DB_SCHEMA}.usuarios(nome, email, telefone, senha) VALUES ($1, $2, $3, $4) RETURNING *`,
-            [user.nome, user.email, user.telefone, user.senha]
+            `INSERT INTO ${process.env.DB_SCHEMA}.usuarios(nome, email, telefone, senha, idauthgoogle) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            [user.nome, user.email, user.telefone, user.senha, user.idAuthGoogle]
         );
         return result.rows[0];
     } catch {
@@ -64,4 +64,17 @@ const updatePasswordById = async (userid, newPassword) => {
     }
 }
 
-module.exports = { getUserByEmail, createUser, findById, getUserByPhone, updatePasswordById};
+
+// Exemplo de implementação de getUserByGoogleId
+const getUserByGoogleId = async (idAuthGoogle) => {
+    try {
+        const query = `SELECT * FROM ${process.env.DB_SCHEMA}.usuarios WHERE idauthgoogle = $1`; // Ajuste a consulta conforme a sua tabela
+        const result = await pool.query(query, [idAuthGoogle]);
+        return result; // Deve retornar um objeto com uma propriedade `rows`
+    } catch {
+        console.error('Error create user: ', error);
+        throw error;
+    }
+};
+
+module.exports = { getUserByEmail, createUser, findById, getUserByPhone, getUserByGoogleId, updatePasswordById };
