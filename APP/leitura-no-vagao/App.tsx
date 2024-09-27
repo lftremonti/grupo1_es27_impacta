@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View } from 'react-native';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { Routes } from './src/routes';
 import { AuthProvider } from './src/hooks/auth';
 import { Montserrat_700Bold, Montserrat_500Medium, Montserrat_400Regular } from '@expo-google-fonts/montserrat';
+import { ClerkProvider } from '@clerk/clerk-expo';
+import { tokenCache } from './src/storage/tokenCache';
+import { LogBox } from 'react-native';
 
 // Impedir que a splash screen esconda automaticamente
 SplashScreen.preventAutoHideAsync();
+const EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY as string;
+
+LogBox.ignoreAllLogs(); 
 
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -35,9 +41,11 @@ export default function App() {
 
   return (
     <View style={{ flex: 1 }}>
-      <AuthProvider>
-        <Routes />
-      </AuthProvider>
+      <ClerkProvider publishableKey={EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
+        <AuthProvider>
+          <Routes />
+        </AuthProvider>
+      </ClerkProvider>
     </View>
   );
 }

@@ -11,4 +11,13 @@ export const styles = StyleSheet.create({
         fontSize: 20,
         marginBottom: 20,
     },
+    text: {
+        fontSize: 18,
+        fontWeight: "bold"
+    },
+    image:{
+        width: 92,
+        height: 92,
+        borderRadius: 12
+    }
 });

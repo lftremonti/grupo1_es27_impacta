@@ -1,103 +1,88 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import users from '../data/users.json';
-
-const COLLECTION_USERS = '@appname:users';
-const TOKEN_EXPIRATION_TIME = 60 * 60 * 1000; // 1 hora em milissegundos
-
-type User = {
-  id: string;
-  username: string;
-  firstName: string;
-  avatar: string;
-  email: string;
-  token: string;
-  tokenExpiration: number; // Adicionamos a expiração do token
-};
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import { User } from '../types/User';
+import { checkTokenValidity } from '../utils/checkTokenValidity';
+import { useAuth } from "@clerk/clerk-expo";
 
 type AuthContextData = {
   user: User | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
+  signIn: (result: any) => Promise<User>;
+  signOutUser: () => Promise<void>;
 };
 
-type AuthProviderProps = {
-  children: ReactNode;
-};
+const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
-export const AuthContext = createContext({} as AuthContextData);
-
-function AuthProvider({ children }: AuthProviderProps) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  async function signIn(email: string, password: string) {
-    try {
-      setLoading(true);
-
-      const foundUser = users.find(user => user.email === email && user.password === password);
-
-      if (!foundUser) {
-        throw new Error('Dados de acesso inválidos.\n Por favor tente novamente.');
-      }
-
-      const userWithToken = {
-        ...foundUser,
-        tokenExpiration: Date.now() + TOKEN_EXPIRATION_TIME,
-      };
-
-      await AsyncStorage.setItem(COLLECTION_USERS, JSON.stringify(userWithToken));
-      setUser(userWithToken);
-    } catch (error: any) {
-      throw new Error(error.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function signOut() {
-    await AsyncStorage.removeItem(COLLECTION_USERS);
-    setUser(null);
-  }
-
-  async function loadUserStorageData() {
-    const storage = await AsyncStorage.getItem(COLLECTION_USERS);
-
-    if (storage) {
-      const userLogged = JSON.parse(storage) as User;
-      setUser(userLogged);
-      checkTokenExpiration(userLogged);
-    }
-  }
-
-  function checkTokenExpiration(user: User) {
-    if (user.tokenExpiration && Date.now() > user.tokenExpiration) {
-      signOut();
-    }
-  }
+  const { signOut } = useAuth();
 
   useEffect(() => {
-    loadUserStorageData();
-    const interval = setInterval(() => {
-      if (user) {
-        checkTokenExpiration(user);
-      }
-    }, 10000); // Verifica a cada 10 segundos
+    let interval: NodeJS.Timeout;
 
-    return () => clearInterval(interval);
-  }, [user]);
+    const loadUserData = async () => {
+      const isTokenValid = await checkTokenValidity();
+
+      if (isTokenValid) {
+        const storedUser = await SecureStore.getItemAsync('userData');
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        }
+      } else {
+        await SecureStore.deleteItemAsync('userData');
+        await SecureStore.deleteItemAsync('userToken');
+        setUser(null);
+      }
+    };
+
+    loadUserData();
+
+    // Verifica a validade do token a cada 5 minutos (300000 ms)
+    interval = setInterval(async () => {
+      const isTokenValid = await checkTokenValidity();
+      if (!isTokenValid) {
+        await SecureStore.deleteItemAsync('userData');
+        await SecureStore.deleteItemAsync('userToken');
+        setUser(null);
+      }
+    }, 300000); // a cada 5 minutos
+
+    return () => clearInterval(interval); // Limpa o intervalo ao desmontar o componente
+  }, []);
+
+  const signOutUser = async () => {
+    await SecureStore.deleteItemAsync('userData');
+    await SecureStore.deleteItemAsync('userToken');
+    setUser(null);
+    signOut();
+  };
+
+  const signIn = async (result: any) => {
+    const userData: User = {
+      id: result.data.user.ad_usuario_id,
+      nome: result.data.user.nome,
+      email: result.data.user.email,
+      ativo: result.data.user.ativo,
+      telefone: result.data.user.telefone,
+      criado: result.data.user.criado,
+      imagemId: result.data.user.imagemid,
+      enderecoId: result.data.user.enderecoid,
+      roleid: result.data.user.role.roleid,
+      role: result.data.user.role.role,
+      token: result.data.token
+    };
+
+    setUser(userData);
+
+    return userData;
+  };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, signIn, signOutUser }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-function useAuth() {
-  const context = useContext(AuthContext);
-  return context;
+export function useAuthSignIn() {
+  return useContext(AuthContext);
 }
-
-export { AuthProvider, useAuth };

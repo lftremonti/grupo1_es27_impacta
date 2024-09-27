@@ -9,7 +9,7 @@ export function AppRoutes() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Home" component={Home} />
-      {/* Adicione outras telas protegidas aqui */}
+      {/* Adicione outras telas que necessitam do login aqui */}
     </Stack.Navigator>
   );
 }
