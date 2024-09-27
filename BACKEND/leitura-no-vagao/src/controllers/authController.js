@@ -168,7 +168,7 @@ const loginWithGoogleId = async (req, res, next) => {
 
         // Aqui você deve verificar se o ID do Google corresponde ao usuário
         // Para simplificar, vamos assumir que temos um campo id_google na tabela do usuário
-        if (userResult.id_google !== idAuthGoogle) {
+        if (userResult.idauthgoogle !== idAuthGoogle) {
             return next(new ApiError(401, 'ID do Google não corresponde ao usuário.'));
         }
 

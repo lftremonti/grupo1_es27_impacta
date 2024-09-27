@@ -44,6 +44,32 @@ const create = async (req, res, next) => {
     }
 };
 
+const updateGoogleId = async (req, res, next) => {
+    try {
+        const { idAuthGoogle, email } = req.body;
+
+        // Verifica se o email e o idAuthGoogle foram fornecidos
+        if (!idAuthGoogle || !email) {
+            return next(new ApiError(400, 'E-mail e ID do Google são obrigatórios.'));
+        }
+
+        // Verificar se o idAuthGoogle já existe
+        if (idAuthGoogle) {
+            const existingUserByGoogleId = await userModel.getUserByGoogleId(idAuthGoogle);
+            if (existingUserByGoogleId.rows[0]) {
+                return next(new ApiError(400, 'Este ID do Google já está associado a um usuário!'));
+            }
+        }
+
+        //Entra na model para atualizar o usuario
+        await userModel.updateGoogleId(idAuthGoogle, email);
+        
+        return successResponse(res, 201, 'Usuario criado com sucesso!');
+    } catch (err) {
+        next(new ApiError(500, 'Server error', err.message));
+    }
+};
+
 const getUserById = async (req, res, next) => {
     const { id } = req.params;
     try {
@@ -66,7 +92,7 @@ const getUserByEmail = async (req, res, next) => {
         const user = await userModel.getUserByEmail(email);
 
         //Caso não encontre o usuario devolve a resposta do erro
-        if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+        if (!user.rows[0]) return res.status(404).json({ error: 'Usuário não encontrado' });
 
         return successResponse(res, 200, 'Usuario Encontrado!', { user: user.rows[0] });
     } catch (error) {
@@ -81,8 +107,10 @@ const checkUserByEmail = async (req, res, next) => {
         // Busca o usuário pelo email
         const user = await userModel.getUserByEmail(email);
 
+        console.log("Usuario: ", user)
+
         // Retorna um objeto com a propriedade exists
-        if (!user) {
+        if (!user.rows[0]) {
             return res.status(200).json({ exists: false }); // User not found
         }
 
@@ -93,4 +121,4 @@ const checkUserByEmail = async (req, res, next) => {
 };
 
 
-module.exports = { create, getUserById, getUserByEmail, checkUserByEmail };
+module.exports = { create, updateGoogleId, getUserById, getUserByEmail, checkUserByEmail };

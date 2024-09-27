@@ -68,6 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       enderecoId: result.data.user.enderecoid,
       roleid: result.data.user.role.roleid,
       role: result.data.user.role.role,
+      token: result.data.token
     };
 
     setUser(userData);

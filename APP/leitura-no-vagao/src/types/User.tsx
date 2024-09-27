@@ -8,5 +8,6 @@ export interface User {
     imagemId: string,
     enderecoId: string,
     roleid: string,
-    role: string
+    role: string,
+    token: string
 }

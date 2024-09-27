@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const {  create, getUserById, getUserByEmail, checkUserByEmail } = require('../controllers/userController');
+const { create, updateGoogleId, getUserById, getUserByEmail, checkUserByEmail } = require('../controllers/userController');
 const { authMiddleware } = require('../middlewares/authMiddleware');
 
-//Cadastrar ususario
+//Cadastrar usuarios
 router.post('/create', create);
+//Cadastrar o id do google para um usuario já cadastrado na base
+router.put('/updateGoogleId', authMiddleware, updateGoogleId);
 //Buscar o usuario pelo ID
 router.get('/:id', authMiddleware, getUserById);
 //Buscar o usuario pelo Email

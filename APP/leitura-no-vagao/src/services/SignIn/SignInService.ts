@@ -27,12 +27,12 @@ export async function checkUserExistsService(email: string) {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token || process.env.BYPASS_TOKEN_KEY}`,
+                'Authorization': `Bearer ${token || config.TOKEN_URL}`,
             },
         });
 
         const result = await response.json();
-        return result.exists; // Retorna true ou false
+        return result; // Retorna true ou false
     } catch (error) {
         console.log(`Error ao verificar usuário: ${config.BASE_URL}`, error);
         throw new Error('Error ao verificar usuário.');

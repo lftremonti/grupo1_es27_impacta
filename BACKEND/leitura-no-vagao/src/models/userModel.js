@@ -50,6 +50,30 @@ const createUser = async (user) => {
     }
 };
 
+// Função para atualizar o campo idAuthGoogle de usuário já existente
+const updateGoogleId = async (idAuthGoogle, email) => {
+    try {
+        const query = `
+            UPDATE ${process.env.DB_SCHEMA}.usuarios
+            SET idauthgoogle = $1
+            WHERE email = $2
+            RETURNING *;
+        `;
+        const values = [idAuthGoogle, email];
+
+        const result = await pool.query(query, values);
+        
+        if (result.rows.length > 0) {
+            return result.rows[0]; // Retorna o usuário atualizado
+        } else {
+            throw new Error(`Email informado ${user.email} não foi encontrado.`);
+        }
+    } catch {
+        console.error('Error ao atualizar os dados do usuario: ', error);
+        throw error;
+    }
+};
+
 //Atualizar a senha do usuario pelo id
 const updatePasswordById = async (userid, newPassword) => {
     try {
@@ -77,4 +101,4 @@ const getUserByGoogleId = async (idAuthGoogle) => {
     }
 };
 
-module.exports = { getUserByEmail, createUser, findById, getUserByPhone, getUserByGoogleId, updatePasswordById };
+module.exports = { getUserByEmail, createUser, findById, getUserByPhone, getUserByGoogleId, updatePasswordById, updateGoogleId };

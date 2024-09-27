@@ -22,7 +22,6 @@ function parseJwt(token: string): any {
 export async function checkTokenValidity(): Promise<boolean> {
   try {
     const token = await SecureStore.getItemAsync('userToken');
-    console.log("Token: ", token);
 
     if (!token) {
       return false; // Retorna false se não houver token armazenado

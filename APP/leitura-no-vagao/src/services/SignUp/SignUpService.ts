@@ -50,3 +50,34 @@ export async function saveUserService(user: User) {
     throw new Error('Error ao salvar o usuário no banco.');
   }
 }
+
+
+export async function updateIdAuthGoogle(idAuthGoogle: string, email: string){
+  try {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${config.TOKEN_URL}`,
+    };
+
+    const requestBody = {
+      idAuthGoogle: idAuthGoogle,
+      email: email
+    };
+
+    const response = await fetch(`${config.BASE_URL}/api/users/updateGoogleId`, {
+      method: 'PUT',
+      headers: headers,
+      body: JSON.stringify(requestBody), // Envia os dados do usuário
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    return result; // Retorna a resposta do servidor
+  } catch (error) {
+    console.log(`Error ao salvar o usuário no banco: ${config.BASE_URL}`, error);
+    throw new Error('Error ao salvar o usuário no banco.');
+  }
+}

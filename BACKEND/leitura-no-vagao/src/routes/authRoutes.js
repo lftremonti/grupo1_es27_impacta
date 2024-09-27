@@ -8,7 +8,7 @@ const router = express.Router();
 router.post('/login', login);
 
 //Realizar o login com o ggole
-router.get('/google', loginWithGoogleId);
+router.post('/google', loginWithGoogleId);
 
 //Resetar senha
 router.post('/send-reset-code', sendResetCode);

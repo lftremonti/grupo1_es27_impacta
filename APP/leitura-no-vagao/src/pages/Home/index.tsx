@@ -5,10 +5,11 @@ import { useAuthSignIn } from '../../hooks/auth';
 import { styles } from './styles';
 import { useUser } from "@clerk/clerk-expo";
 import { signInGoogleService, checkUserExistsService } from '../../services/SignIn/SignInService';
-import { saveUserService } from '../../services/SignUp/SignUpService'
+import { saveUserService, updateIdAuthGoogle } from '../../services/SignUp/SignUpService';
+import { User } from '../../types/User'
 
 // Define a interface para o usuário
-interface User {
+interface UserCreate {
   name: string;
   email: string;
   phone?: string; // Telefone é opcional
@@ -20,7 +21,7 @@ export function Home() {
   const { user } = useUser();
   const { signOutUser } = useAuthSignIn();
   const [loadingScreenHome, setLoadingScreenHome] = useState(true); // Estado de loading da tela
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState<User | null>(null); // Define o tipo correto para o estado userData
 
   // Pegando o email com fallback para string vazia caso seja undefined
   const email = user?.emailAddresses?.[0]?.emailAddress || ''; 
@@ -37,32 +38,28 @@ export function Home() {
         const storedToken = await SecureStore.getItemAsync('userToken');
         const storedUserData = await SecureStore.getItemAsync('userData');
 
-        console.log("storedUserData: ", storedUserData);
-        console.log("storedToken:", storedToken);
-
-        if (storedToken && storedUserData) {
+        if (storedUserData) {
           // Se houver token e dados do usuário, carregar os dados
           setUserData(JSON.parse(storedUserData));
           setLoadingScreenHome(false);
         } else {
           // Verifica se o email está disponível antes de chamar a API
-          console.log("Entrou no else");
           if (email) {
             console.log("email", email);
             // Se não houver token, checar se o usuário existe na API
             const userExists = await checkUserExistsService(email);
-            console.log("userExists:", userExists);
-            if (userExists) {
-              console.log("Entrou no if que dizer que o email existe")
+            if (userExists.exists) {
+              if(userExists.user.idauthgoogle === null){
+                await updateIdAuthGoogle(idAuthGoogle, email)
+              }
               // Se o usuário existir, efetuar login e obter token
               const getUserE = await signInGoogleService(email, idAuthGoogle);
-              console.log("getUserE: ", getUserE)
-              await SecureStore.setItemAsync('userToken', getUserE.token);
-              await SecureStore.setItemAsync('userData', JSON.stringify(getUserE.user));
-              setUserData(getUserE.user);
+              await SecureStore.setItemAsync('userToken', getUserE.data.token);
+              await SecureStore.setItemAsync('userData', JSON.stringify(getUserE.data.user));
+              setUserData(getUserE.data.user);
             } else {
               // Se o usuário não existir, construa o objeto User para salvar
-              const newUser: User = {
+              const newUser: UserCreate = {
                 name: user?.fullName || '', // Nome do usuário
                 email: email,
                 phone: '', // Telefone pode ser vazio
@@ -98,8 +95,8 @@ export function Home() {
     <View style={styles.container}>
       <Text style={styles.welcomeText}>Bem-vindo à tela Home</Text>
       <Image source={{ uri: user?.imageUrl }} style={styles.image} />
-      <Text style={styles.text}>Full Name: {user?.fullName}</Text>
-      <Text style={styles.text}>Email: {email}</Text>
+      <Text style={styles.text}>Full Name: {userData?.nome}</Text>
+      <Text style={styles.text}>Email: {userData?.email}</Text>
       <Button title="Sair" onPress={handleSignOut} />
     </View>
   );

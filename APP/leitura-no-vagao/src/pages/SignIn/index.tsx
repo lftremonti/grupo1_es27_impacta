@@ -67,12 +67,10 @@ export function SignIn() {
         try {
           const userData = await signIn(result);
           await SecureStore.setItemAsync('userData', JSON.stringify(userData));
-          await SecureStore.setItemAsync('userToken', result.data.token);
-          console.log('Dados do usuário salvos com sucesso.');
   
           // Garantindo que os dados foram salvos antes de navegar
           const storedUserData = await SecureStore.getItemAsync('userData');
-          console.log('storedUserData: ', storedUserData);
+          console.log('storedUserData Login: ', storedUserData);
 
           if (storedUserData) {
             // Navegar para a tela "Home" apenas depois de salvar o token
