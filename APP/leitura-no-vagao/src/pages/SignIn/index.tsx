@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Provider as PaperProvider } from 'react-native-paper';
-import { useOAuth } from "@clerk/clerk-expo"
+import { useOAuth } from "@clerk/clerk-expo";
 import { styles } from './styles';
 import { useAuthSignIn } from '../../hooks/auth';
 import CustomDialog from '../../components/CustomDialog';
 import { signInService } from '../../services/SignIn/SignInService';
-import * as Liking from 'expo-linking'
-import * as WebBrowser from "expo-web-browser"
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Liking from 'expo-linking';
+import * as WebBrowser from "expo-web-browser";
 import * as SecureStore from 'expo-secure-store';
 
 WebBrowser.maybeCompleteAuthSession()
@@ -20,6 +19,7 @@ export function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingSignUp, setIsLoadingSignUp] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const { signIn } = useAuthSignIn();
   const navigation = useNavigation();
@@ -217,9 +217,15 @@ export function SignIn() {
 
           <Animated.View entering={FadeInDown.delay(1050).duration(5000).springify()}>
             <Text style={styles.signUpText}>Não possui uma conta?</Text>
-            <TouchableOpacity style={styles.buttonSignUp} onPress={() => navigation.navigate('SignUp' as never)}>
-              <Text style={styles.signUpLink}>Cadastre-se</Text>
-            </TouchableOpacity>
+            {isLoadingSignUp ? (
+              <TouchableOpacity style={styles.buttonSignUp} onPress={() => navigation.navigate('SignUp' as never)}>
+                <ActivityIndicator size="large" color="#FFFFFF" />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={styles.buttonSignUp} onPress={() => navigation.navigate('SignUp' as never)}>
+                <Text style={styles.signUpLink}>Cadastre-se</Text>
+              </TouchableOpacity>
+            )}
           </Animated.View>
         </Animated.View>
       </View>
