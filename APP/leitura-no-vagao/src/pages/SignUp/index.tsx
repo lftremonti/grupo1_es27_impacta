@@ -9,7 +9,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
-import { addUser } from '../../services/SignUp/SignUpService';
+import { saveUserService } from '../../services/SignUp/SignUpService';
 import { Provider as PaperProvider } from 'react-native-paper';
 
 import { styles } from './styles';
@@ -18,6 +18,7 @@ import CustomDialog from '../../components/CustomDialog';
 export function SignUp() {
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -25,7 +26,7 @@ export function SignUp() {
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState<boolean>(false);
 
   const navigation = useNavigation();
-  const [errors, setErrors] = useState({ name: false, email: false, password: false, confirmPassword: false });
+  const [errors, setErrors] = useState({ name: false, email: false, phone: false, password: false, confirmPassword: false });
 
   const [visible, setVisible] = useState<boolean>(false);
   const [dialogTitle, setDialogTitle] = useState<string>('');
@@ -48,17 +49,18 @@ export function SignUp() {
 
   const handleSignUp = async () => {
     // Resetar erros
-    setErrors({ name: false, email: false, password: false, confirmPassword: false });
+    setErrors({ name: false, email: false, phone: false, password: false, confirmPassword: false });
     // Verifica se os campos estão vazios
     const newErrors = {
       name: !name,
       email: !email,
+      phone: !phone,
       password: !password,
       confirmPassword: !confirmPassword
     };
 
     // Mostrar a caixa de erro pedindo que o usuário não preencheu todos os campos
-    if (newErrors.name || newErrors.email || newErrors.password || newErrors.confirmPassword) {
+    if (newErrors.name || newErrors.email || newErrors.phone || newErrors.password || newErrors.confirmPassword) {
       setErrors(newErrors);
       showDialog('Campos Obrigatórios', 'Por favor, preencha todos os campos!', 'fail');
       return;
@@ -74,16 +76,14 @@ export function SignUp() {
 
     try {
       const newUser = {
-        id: '', // Será preenchido pelo serviço
-        username: name,
-        firstName: name,
-        avatar: 'defaultAvatar',
-        email,
-        password,
-        token: 'tokenPlaceholder', // Você pode gerar um token real aqui
+        name: name,
+        email: email,
+        phone: phone,
+        password: password,
+        idAuthGoogle: ''
       };
 
-      await addUser(newUser); // Salvar o novo usuário
+      await saveUserService(newUser); // Salvar o novo usuário
       showDialog('Cadastro realizado com sucesso', `Bem-vindo, ${name}!\nAgora e possivel realizar o login 😄`, 'success');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
@@ -135,6 +135,18 @@ export function SignUp() {
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(850).duration(5000).springify()}>
+            <Text style={styles.label}>Telefone</Text>
+            <TextInput
+              style={[styles.input, errors.phone && { borderColor: 'red', borderWidth: 1 }]}
+              placeholder="Insira o numero do seu telefone"
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+              autoCapitalize="none"
+            />
+          </Animated.View>
+
+          <Animated.View entering={FadeInDown.delay(1050).duration(5000).springify()}>
             <Text style={styles.label}>Senha</Text>
             <View style={[styles.inputWrapper, errors.password && { borderColor: 'red', borderWidth: 1 }]}>
               <TextInput
@@ -150,7 +162,7 @@ export function SignUp() {
             </View>
           </Animated.View>
 
-          <Animated.View entering={FadeInDown.delay(1050).duration(5000).springify()}>
+          <Animated.View entering={FadeInDown.delay(1250).duration(5000).springify()}>
             <Text style={styles.label}>Confirmação</Text>
             <View style={[styles.inputWrapper, errors.confirmPassword && { borderColor: 'red', borderWidth: 1 }]}>
               <TextInput
@@ -166,7 +178,7 @@ export function SignUp() {
             </View>
           </Animated.View>
 
-          <Animated.View entering={FadeInDown.delay(1250).duration(5000).springify()}>
+          <Animated.View entering={FadeInDown.delay(1450).duration(5000).springify()}>
             {isLoading ? (
               <TouchableOpacity style={styles.button}>
                 <ActivityIndicator size="large" color="#FFFFFF" />
@@ -178,7 +190,7 @@ export function SignUp() {
             )}
           </Animated.View>
 
-          <Animated.View entering={FadeInDown.delay(1450).duration(5000).springify()}>
+          <Animated.View entering={FadeInDown.delay(1650).duration(5000).springify()}>
             <TouchableOpacity onPress={() => navigation.navigate('SignIn' as never)}>
               <Text style={styles.signUpText}>Já possui uma conta? <Text style={styles.forgotPasswordLink}>Clique aqui</Text></Text>
             </TouchableOpacity>

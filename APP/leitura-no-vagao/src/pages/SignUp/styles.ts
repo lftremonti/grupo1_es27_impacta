@@ -15,7 +15,7 @@ export const styles = StyleSheet.create({
     color: theme.colors.primary,
     textAlign: 'center',
     marginVertical: 10,
-    marginBottom: 35
+    marginBottom: 25
   },
   instructions: {
     fontSize: 14,
@@ -37,7 +37,7 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     paddingHorizontal: 22,
-    marginBottom: 20,
+    marginBottom: 15,
     backgroundColor: theme.colors.secondary90,
   },
   inputWrapper: {
