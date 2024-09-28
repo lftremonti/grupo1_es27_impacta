@@ -39,5 +39,5 @@ Para que o projeto funcione corretamente algumas configurações são necessaria
     Para facilitar a execução dos scripts de criação do banco de dados e a realização de consultas ou configurações, recomendo a instalação do DBeaver. Essa ferramenta fornece uma interface amigável e robusta para gerenciar bancos de dados, incluindo a criação de tabelas, visualização de dados e administração do seu banco PostgreSQL.
 
     
-Não se esqueça de fazer todas essas configurações para que o aap funcione corretamente.
+Não se esqueça de fazer todas essas configurações para que o app funcione corretamente.
 Qualquer duvida pode me chamar que ajudo a configurar.

@@ -11,6 +11,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { saveUserService } from '../../services/SignUp/SignUpService';
 import { Provider as PaperProvider } from 'react-native-paper';
+import { TextInputMask } from 'react-native-masked-text';
 
 import { styles } from './styles';
 import CustomDialog from '../../components/CustomDialog';
@@ -136,13 +137,19 @@ export function SignUp() {
 
           <Animated.View entering={FadeInDown.delay(850).duration(5000).springify()}>
             <Text style={styles.label}>Telefone</Text>
-            <TextInput
+            <TextInputMask
               style={[styles.input, errors.phone && { borderColor: 'red', borderWidth: 1 }]}
               placeholder="Insira o numero do seu telefone"
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
               autoCapitalize="none"
+              type={'cel-phone'}
+              options={{
+                maskType: 'BRL',
+                withDDD: true,
+                dddMask: '(99) '
+              }}
             />
           </Animated.View>
 

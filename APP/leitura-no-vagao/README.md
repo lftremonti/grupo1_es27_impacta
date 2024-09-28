@@ -19,4 +19,4 @@ Para que o projeto funcione corretamente algumas configurações são necessaria
     b) Caso um dia for feito o deploy iremos mudar para url aonde a APi foi hospedada.
 
 
-Não se esqueça de fazer todas essas configurações para que o aap funcione corretamente.
+Não se esqueça de fazer todas essas configurações para que o app funcione corretamente.
