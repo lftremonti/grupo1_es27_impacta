@@ -107,8 +107,6 @@ const checkUserByEmail = async (req, res, next) => {
         // Busca o usuário pelo email
         const user = await userModel.getUserByEmail(email);
 
-        console.log("Usuario: ", user)
-
         // Retorna um objeto com a propriedade exists
         if (!user.rows[0]) {
             return res.status(200).json({ exists: false }); // User not found
