@@ -5,9 +5,10 @@ interface CodeInputProps {
   value: string;
   onChange: (code: string) => void;
   maxLength?: number;
+  hasError?: boolean; // Nova propriedade
 }
 
-const CodeInput: React.FC<CodeInputProps> = ({ value, onChange, maxLength = 6 }) => {
+const CodeInput: React.FC<CodeInputProps> = ({ value, onChange, maxLength = 6, hasError = false  }) => {
   const inputRefs = useRef<Array<TextInput | null>>([]);
 
   useEffect(() => {
@@ -58,7 +59,7 @@ const CodeInput: React.FC<CodeInputProps> = ({ value, onChange, maxLength = 6 })
         <TextInput
           key={index}
           ref={(ref) => inputRefs.current[index] = ref}
-          style={styles.input}
+          style={[styles.input, hasError && styles.errorInput]} // Aplica estilo de erro se necessário
           value={value[index] || ''}
           onChangeText={(text) => handleTextChange(text, index)}
           onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, index)}
@@ -85,6 +86,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 24,
     marginHorizontal: 5,
+  },
+  errorInput: {
+    borderBottomColor: 'red', // Cor vermelha quando houver erro
   },
 });
 

@@ -7,7 +7,16 @@ import { EmailInputScreen } from '../pages/PasswordReset/EmailInputScreen';
 import { CodeValidationScreen } from '../pages/PasswordReset/CodeValidationScreen';
 import { PasswordResetScreen } from '../pages/PasswordReset/PasswordResetScreen';
 
-const Stack = createStackNavigator();
+// Definir tipos para as rotas
+export type RootStackParamList = {
+  SignIn: undefined;  // Rota que não precisa de parâmetro
+  SignUp: undefined; // Também sem parâmetros
+  EmailInputScreen: undefined;
+  CodeValidationScreen: { userExists: any };  // Rota que precisa de um parâmetro
+  PasswordResetScreen: { userid: string; code: string }
+};
+
+const Stack = createStackNavigator<RootStackParamList>();
 
 export function AuthRoutes() {
   return (
