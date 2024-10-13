@@ -6,7 +6,10 @@ import { styles } from './styles';
 import { useUser } from "@clerk/clerk-expo";
 import { signInGoogleService, checkUserExistsService } from '../../services/SignIn/SignInService';
 import { saveUserService, updateIdAuthGoogle } from '../../services/SignUp/SignUpService';
-import { User } from '../../types/User'
+import { User } from '../../types/User';
+import { DrawerActions } from '@react-navigation/native'; // Importação necessária
+import { DrawerNavigationProp } from '@react-navigation/drawer';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 // Define a interface para o usuário
 interface UserCreate {
@@ -17,7 +20,40 @@ interface UserCreate {
   idAuthGoogle?: string; // ID de autenticação do Google
 }
 
-export function Home() {
+// Define as propriedades do componente Home
+type Props = {
+  navigation: DrawerNavigationProp<any>; // Defina o tipo correto para a navegação
+};
+
+interface Book {
+  id: string;
+  title: string;
+  author: string;
+  coverImageUrl: string;
+}
+
+const booksData: Book[] = [
+  {
+    id: '1',
+    title: 'The Catcher in the Rye',
+    author: 'J.D. Salinger',
+    coverImageUrl: 'https://example.com/catcher.jpg', // Use URLs reais
+  },
+  {
+    id: '2',
+    title: 'Someone Like You',
+    author: 'Roald Dahl',
+    coverImageUrl: 'https://example.com/someone.jpg',
+  },
+  {
+    id: '3',
+    title: 'The Great Gatsby',
+    author: 'F. Scott Fitzgerald',
+    coverImageUrl: 'https://example.com/gatsby.jpg',
+  },
+];
+
+export function Home({ navigation }: Props) {
   const { user } = useUser();
   const { signOutUser } = useAuthSignIn();
   const [loadingScreenHome, setLoadingScreenHome] = useState(true); // Estado de loading da tela
@@ -29,6 +65,10 @@ export function Home() {
 
   const handleSignOut = async () => {
     await signOutUser();
+  };
+
+  const openDrawer = () => {
+    navigation.dispatch(DrawerActions.openDrawer()); // Função para abrir o Drawer
   };
 
   useEffect(() => {
@@ -93,6 +133,7 @@ export function Home() {
 
   return (
     <View style={styles.container}>
+      <Ionicons name="menu" size={30} onPress={openDrawer} />
       <Text style={styles.welcomeText}>Bem-vindo à tela Home</Text>
       <Image source={{ uri: user?.imageUrl }} style={styles.image} />
       <Text style={styles.text}>Full Name: {userData?.nome}</Text>

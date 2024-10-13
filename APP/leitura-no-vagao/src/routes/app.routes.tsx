@@ -1,15 +1,19 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import CustomDrawer from '../components/CustomDrawer';
 
 import { Home } from '../pages/Home';
 
-const Stack = createStackNavigator();
+const Drawer = createDrawerNavigator();
 
 export function AppRoutes() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Home" component={Home} />
+    <Drawer.Navigator 
+      drawerContent={(props) => <CustomDrawer {...props} />}
+      screenOptions={{ headerShown: false}}>
+      
+      <Drawer.Screen name="Home" component={Home} />
       {/* Adicione outras telas que necessitam do login aqui */}
-    </Stack.Navigator>
+    </Drawer.Navigator>
   );
 }
