@@ -7,12 +7,19 @@ import ProgressBar from '../../../components/ProgressBar';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { styles } from './styles';
 import CustomDialog from '../../../components/CustomDialog';
+import { checkUserExistsService } from '../../../services/SignIn/SignInService';
+import { sendResetCode } from '../../../services/PasswordReset/PasswordResetService';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../../routes/auth.routes';  // Certifique-se de ajustar o caminho
+
+// Definir o tipo de navegação
+type EmailInputScreenNavigationProp = StackNavigationProp<RootStackParamList, 'EmailInputScreen'>;
 
 export function EmailInputScreen() {
   const [email, setEmail] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
-  const navigation = useNavigation();
+  const navigation = useNavigation<EmailInputScreenNavigationProp>();
   const [errors, setErrors] = useState({ email: false });
 
   const [visible, setVisible] = useState<boolean>(false);
@@ -46,7 +53,27 @@ export function EmailInputScreen() {
     }
 
     setIsLoading(true);
-    navigation.navigate('CodeValidationScreen' as never);
+
+    try {
+      const userExists = await checkUserExistsService(email);
+      if (userExists.exists) {
+        
+        const sendCode = await sendResetCode(email);
+        if(sendCode.type === 'success' && sendCode.status === 200){
+          navigation.navigate('CodeValidationScreen', { userExists });
+        } else {
+          console.error("Erro ao enviar código de redefinição", sendCode);
+          showDialog('Error', 'Falha ao enviar o código de redefinição. Tente novamente mais tarde.', 'fail');
+        }
+      }else{
+        showDialog('Error', 'Email informado não existe na base de dados', 'fail');
+      }
+    } catch (error) {
+      console.error("Error ao verificar usuario:", error);
+      showDialog('Error', 'Não foi possível verificar o email, tente novamente mais tarde..', 'fail');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {

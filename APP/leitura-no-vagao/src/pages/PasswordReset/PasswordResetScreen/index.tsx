@@ -8,9 +8,10 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import ProgressBar from '../../../components/ProgressBar';
 import { Provider as PaperProvider } from 'react-native-paper';
+import { resetPassword } from '../../../services/PasswordReset/PasswordResetService';
 
 import { styles } from './styles';
 import CustomDialog from '../../../components/CustomDialog';
@@ -23,6 +24,8 @@ export function PasswordResetScreen() {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
+  const route = useRoute();  // Use o hook useRoute
+  const { userid, code } = route.params as { userid: string; code: string };
 
   const navigation = useNavigation();
   const [errors, setErrors] = useState({ password: false, confirmPassword: false });
@@ -68,9 +71,21 @@ export function PasswordResetScreen() {
       return;
     }
 
-    showDialog('Sucesso', 'Senha redefinida com sucesso!', 'success');
-    setIsLoading(true);
-    navigation.navigate('SignIn' as never);
+    try {
+      const resetPass = await resetPassword(userid, code, password);
+
+      if(resetPass.status === 200){
+        showDialog('Sucesso', 'Senha redefinida com sucesso!', 'success');
+      } else {
+        console.log("Error ao resetar a senha")
+        showDialog('Error', 'Não foi possível redefinir sua senha, tente novamente mais tarde..', 'fail');
+      }
+    } catch (error) {
+      console.error("Error ao redefinir senha:", error);
+      showDialog('Error', 'Não foi possível redefinir sua senha, tente novamente mais tarde..', 'fail');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {

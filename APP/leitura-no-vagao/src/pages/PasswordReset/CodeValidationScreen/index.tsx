@@ -5,22 +5,35 @@ import {
   TouchableOpacity,
   ActivityIndicator
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import ProgressBar from '../../../components/ProgressBar';
 import { Provider as PaperProvider } from 'react-native-paper';
-
 import { styles } from './styles';
 import CustomDialog from '../../../components/CustomDialog';
 import CodeInput from '../../../components/CodeInput';
+import { verifySendCode } from '../../../services/PasswordReset/PasswordResetService';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../../routes/auth.routes';  // Certifique-se de ajustar o caminho
+
+interface RouteParams {
+  userExists: any;  // Defina o tipo adequado para userExists
+}
+
+type PasswordResetScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  'CodeValidationScreen'
+>;
 
 export function CodeValidationScreen() {
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0); 
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<PasswordResetScreenNavigationProp>();
+  const route = useRoute();  // Use o hook useRoute
+  const { userExists } = route.params as RouteParams;
+  
   const [errors, setErrors] = useState({ code: false });
 
   const [visible, setVisible] = useState<boolean>(false);
@@ -52,13 +65,21 @@ export function CodeValidationScreen() {
 
     setIsLoading(true);
 
-    const isValidCode = code === '123456'; // Simulação de validação
-    if (isValidCode) {
-      navigation.navigate('PasswordResetScreen' as never);
-    } else {
-      showDialog('Erro', 'O código que você inseriu está incorreto.', 'fail');
+    try {
+      const isValidCode = await verifySendCode(userExists.user.ad_usuario_id, code);
+      const userid = String(userExists.user.ad_usuario_id);
+
+      if (isValidCode.status === 200) {
+        navigation.navigate('PasswordResetScreen', { userid, code });
+      } else {
+        showDialog('Erro', 'O código que você inseriu está incorreto.', 'fail');
+      }
+    } catch (error) {
+      console.error("Error ao verificar o codigo:", error);
+      showDialog('Error', 'Não foi possível verificar o codigo, tente novamente mais tarde..', 'fail');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -87,6 +108,7 @@ export function CodeValidationScreen() {
             <CodeInput
               value={code}
               onChange={setCode}
+              hasError={errors.code} // Passa o estado de erro
             />
           </Animated.View>
 
