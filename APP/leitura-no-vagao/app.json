@@ -23,10 +23,6 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "extra": {
-      "URL_API": "http://192.168.0.144:3333",
-      "BYPASS_TOKEN_KEY": "ABh7clLuAJzeNqB9osgrB5EfuHm1BUED"
     }
   }
 }
