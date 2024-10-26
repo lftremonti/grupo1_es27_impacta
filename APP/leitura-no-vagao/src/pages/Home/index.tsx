@@ -1,27 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import { View, Text, Button, Image, ActivityIndicator } from 'react-native';
+import { View, Text, Button, Image, ActivityIndicator, TextInput, ScrollView, FlatList, TouchableOpacity } from 'react-native';
 import { useAuthSignIn } from '../../hooks/auth';
 import { styles } from './styles';
 import { useUser } from "@clerk/clerk-expo";
 import { signInGoogleService, checkUserExistsService } from '../../services/SignIn/SignInService';
 import { saveUserService, updateIdAuthGoogle } from '../../services/SignUp/SignUpService';
-import { User } from '../../types/User'
+import { User } from '../../types/User';
+import { DrawerActions } from '@react-navigation/native'; // Importação necessária
+import { DrawerNavigationProp } from '@react-navigation/drawer';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Book } from '../../types/Book';
+import { booksData } from '../../data/BookJson';
+import { Category } from '../../types/Category';
+import { category } from '../../data/CategoryJson';
+import { UserCreate } from '../../types/UserCreate';
 
-// Define a interface para o usuário
-interface UserCreate {
-  name: string;
-  email: string;
-  phone?: string; // Telefone é opcional
-  password?: string; // Senha é opcional, pois pode não ser usada para login com Google
-  idAuthGoogle?: string; // ID de autenticação do Google
-}
+// Define as propriedades do componente Home
+type Props = {
+  navigation: DrawerNavigationProp<any>;
+};
 
-export function Home() {
+export function Home({ navigation }: Props) {
   const { user } = useUser();
   const { signOutUser } = useAuthSignIn();
-  const [loadingScreenHome, setLoadingScreenHome] = useState(true); // Estado de loading da tela
-  const [userData, setUserData] = useState<User | null>(null); // Define o tipo correto para o estado userData
+  const [loadingScreenHome, setLoadingScreenHome] = useState(true);
+  const [userData, setUserData] = useState<User | null>(null);
+  const searchInputRef = useRef<TextInput>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [filteredBooks, setFilteredBooks] = useState<Book[]>(booksData);
 
   // Pegando o email com fallback para string vazia caso seja undefined
   const email = user?.emailAddresses?.[0]?.emailAddress || ''; 
@@ -29,6 +36,10 @@ export function Home() {
 
   const handleSignOut = async () => {
     await signOutUser();
+  };
+
+  const openDrawer = () => {
+    navigation.dispatch(DrawerActions.openDrawer()); // Função para abrir o Drawer
   };
 
   useEffect(() => {
@@ -84,20 +95,113 @@ export function Home() {
 
   if (loadingScreenHome) {
     return (
-      <View style={styles.container}>
+      <View style={{ flex: 1,
+        backgroundColor: '#FFFFFF',
+        padding: 8, justifyContent: 'center', alignItems: 'center'}}>
         <ActivityIndicator size="large" color="#0000ff" />
         <Text>Carregando...</Text>
       </View>
     );
   }
 
+  const renderItem = ({ item }: { item: Book }) => (
+    <TouchableOpacity onPress={() => navigation.navigate('BookDetails', { book: item })}>
+      <View style={styles.bookItem}>
+        <Image source={{ uri: item.coverImageUrl }} style={styles.bookCover} />
+        <Text style={styles.bookTitle}>{item.title}</Text>
+        <Text style={styles.bookAuthor}>{item.author}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderCategory = ({ item }: { item: Category }) => (
+    <TouchableOpacity
+      activeOpacity={0.7}
+      style={[
+        styles.categoryItem,
+        selectedCategory === item.id ? styles.activeCategory : styles.inactiveCategory,
+      ]}
+      onPress={() => setSelectedCategory(item.id)}
+    >
+      <Text
+        style={[
+          styles.categoryTitle,
+          selectedCategory === item.id ? styles.activeCategoryText : styles.inactiveCategoryText,
+        ]}
+      >
+        {item.title}
+      </Text>
+    </TouchableOpacity>
+  );
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.welcomeText}>Bem-vindo à tela Home</Text>
-      <Image source={{ uri: user?.imageUrl }} style={styles.image} />
-      <Text style={styles.text}>Full Name: {userData?.nome}</Text>
-      <Text style={styles.text}>Email: {userData?.email}</Text>
-      <Button title="Sair" onPress={handleSignOut} />
-    </View>
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerGreeting}>Olá!</Text>
+        </View>
+        <Ionicons name="person-circle-outline" size={45} style={styles.menuIcon} onPress={openDrawer}/>
+      </View>
+
+      <Text style={styles.headerQuestion}>O que você quer ler hoje?</Text>
+
+      <TouchableOpacity
+        style={styles.searchContainer}
+        activeOpacity={1}
+        onPress={() => searchInputRef.current?.focus()}
+      >
+        <Ionicons name="search" size={20} style={styles.searchIcon} />
+        <TextInput ref={searchInputRef} placeholder="Pesquisar...." style={styles.searchInput} />
+      </TouchableOpacity>
+
+      <FlatList
+        data={category}
+        renderItem={renderCategory}
+        keyExtractor={(item, index) => `category-${item.id}-${index}`}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.booksList}
+      />
+
+      <Text style={styles.sectionTitle}>Destaques</Text>
+      <FlatList
+        data={filteredBooks}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => `book-${item.id}-${index}`}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.booksList}
+      />
+
+      <Text style={styles.sectionTitle}>Os livros mais bem avaliados</Text>
+      <FlatList
+        data={filteredBooks}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => `book-${item.id}-${index}`}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.booksList}
+      />
+
+      <Text style={styles.sectionTitle}>Recomendado para você</Text>
+      <FlatList
+        data={filteredBooks}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => `book-${item.id}-${index}`}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.booksList}
+      />
+
+      <Text style={styles.sectionTitle}>Descobertas da semana</Text>
+      <FlatList
+        data={filteredBooks}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => `book-${item.id}-${index}`}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.booksList}
+      />
+    </ScrollView>
   );
 }

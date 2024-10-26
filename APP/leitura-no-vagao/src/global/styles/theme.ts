@@ -12,8 +12,8 @@ export const theme = {
     },
   
     fonts: {
-        title700: 'Montserrat_700Bold',
-        title500: 'Montserrat_500Medium',
-        text400: 'Montserrat_400Regular',
+      title700: 'Montserrat_700Bold',
+      title500: 'Montserrat_500Medium',
+      text400: 'Montserrat_400Regular',
     }
 };
