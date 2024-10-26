@@ -10,8 +10,7 @@ import {
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { getBookInfo } from '../../services/BookService/BookService';
-
-import { Camera } from 'expo-camera';
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from './styles';
 
@@ -30,30 +29,24 @@ export function RegisterBook() {
   const [scannedCode, setScannedCode] = useState<string | null>(null);
   const [alertShown, setAlertShown] = useState<boolean>(false);
   const [bookName, setBookName] = useState<string>(''); 
-  const [isLoading, setIsLoading] = useState<boolean>(false); 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [permission, requestPermission] = useCameraPermissions();
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const handleSignUp = async () => {
-    // Implementar lógica de signup
-  }
-
   useEffect(() => {
     (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
+      const { status } = await requestPermission();
+        if (status !== 'granted') {
+          Alert.alert('Permissão de câmera necessária', 'Por favor, permita o acesso à câmera.');
+        }
+      })();
   }, []);
-
-  const requestPermission = async () => {
-    const { status } = await Camera.requestCameraPermissionsAsync();
-    setHasPermission(status === 'granted');
-  };
 
   const handleBarCodeScanned = async ({ type, data }: { type: string; data: string }) => {
     if (!alertShown) {
       setScannedCode(data);
-      setScanned(false);
+      setScanned(true);
       const info = await getBookInfo(data);
       setBookInfo(info);
       setAlertShown(true);
@@ -66,14 +59,13 @@ export function RegisterBook() {
             text: 'OK',
             onPress: () => {
               setAlertShown(false);
-              navigation.navigate('BookInfoScreen', { bookInfo: info });
             },
           },
           {
             text: 'Cancelar',
             onPress: () => {
               setAlertShown(false);
-              setScanned(true); 
+              setScanned(false); 
             },
           },
         ]
@@ -81,46 +73,78 @@ export function RegisterBook() {
     }
   };
 
+  if (!permission) {
+    return <View />;
+  }
+
+  if (!permission.granted) {
+      return (
+          <View style={styles.container}>
+              <Text style={styles.message}>Precisamos da sua permissão para mostrar a câmera</Text>
+              <TouchableOpacity onPress={requestPermission} style={styles.button}>
+                  <Text style={styles.text}>Conceder permissão</Text>
+              </TouchableOpacity>
+          </View>
+      );
+  }
+
+  const closeCamera = () => {
+    setScanned(false);
+  };
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.backButton}>
-        <Ionicons name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
-      </TouchableOpacity>
-
-      <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()}>
-        <Text style={styles.welcome}>Doe um livro</Text>
-        <Text style={styles.instructions}>
-          Compartilhe o conhecimento e inspire outras pessoas! Doe seus livros e transforme vidas através da leitura.
-        </Text>
-
-        <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
-          <Text style={styles.label2}>Nome do livro</Text>
-          <View style={styles.pbrino2}>
-            <TextInput
-              placeholder="O pequeno Príncipe"
-              style={[styles.psearchInput2, styles.input2]}
-              value={bookName}
-              onChangeText={setBookName}
-            />
-            <TouchableOpacity onPress={() => setScanned(true)}>
-              <Ionicons name="camera" size={24} style={styles.psearchIcon2} />
-            </TouchableOpacity>
+      {scanned ? (
+        <CameraView style={styles.camera} onBarcodeScanned={handleBarCodeScanned}>
+          <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.button} onPress={closeCamera}>
+                  <Text style={styles.text}>Fechar Câmera</Text>
+              </TouchableOpacity>
           </View>
-        </Animated.View>
+        </CameraView>
+      ) : (
 
-        <Animated.View entering={FadeInDown.delay(1450).duration(5000).springify()}>
-          {isLoading ? (
-            <TouchableOpacity style={styles.button}>
-              <ActivityIndicator size="large" color="#FFFFFF" />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-              <Text style={styles.buttonText}>Salvar</Text>
-            </TouchableOpacity>
-          )}
-        </Animated.View>
+        <>
+          <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.backButton}>
+            <Ionicons name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
+          </TouchableOpacity>
 
-      </Animated.View>
+          <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()}>
+            <Text style={styles.welcome}>Doe um livro</Text>
+            <Text style={styles.instructions}>
+              Compartilhe o conhecimento e inspire outras pessoas! Doe seus livros e transforme vidas através da leitura.
+            </Text>
+
+            <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
+              <Text style={styles.label}>Nome do livro</Text>
+              <View style={styles.viewInput}>
+                <TextInput
+                  placeholder="O pequeno Príncipe"
+                  style={[styles.searchInput, styles.input]}
+                  value={bookName}
+                  onChangeText={setBookName}
+                />
+                <TouchableOpacity onPress={() => setScanned(true)}>
+                  <Ionicons name="camera" size={24} style={styles.searchIcon} />
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.delay(1450).duration(5000).springify()}>
+              {isLoading ? (
+                <TouchableOpacity style={styles.button}>
+                  <ActivityIndicator size="large" color="#FFFFFF" />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity style={styles.button} onPress={() => {}}>
+                  <Text style={styles.buttonText}>Salvar</Text>
+                </TouchableOpacity>
+              )}
+            </Animated.View>
+
+          </Animated.View>
+        </>
+      )}
     </View>
   );
 }
