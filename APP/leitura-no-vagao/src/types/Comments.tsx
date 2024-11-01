@@ -1,7 +1,9 @@
 export interface Comments {
-    id: string;
-    user: string;
-    rating: number;
-    comment: string;
-    date: string;
+    ad_avaliacoes_id: number;
+    livroid: number;
+    usuarioid: number;
+    nome: string;
+    pontuacao: number;
+    comentario: string;
+    data_avaliacao: string;
 }

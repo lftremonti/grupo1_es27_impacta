@@ -23,22 +23,33 @@ export const styles = StyleSheet.create({
         textAlign: 'center',
         color: theme.colors.secondary80,
     },
-    bookRating: {
-        fontSize: 18,
-        textAlign: 'center',
+    bookRatingContainer: {
+        alignItems: 'center',
+        marginVertical: 5,
+    },
+    bookRatingStars: {
+        fontSize: 20,
         color: '#FFD700',
-        marginBottom: 4
+    },
+    bookRatingAverage: {
+        fontSize: 16,
+        color: '#000',
     },
     sectionTitle: {
         marginTop: 5,
         marginBottom: 5,
         fontSize: 18,
         fontWeight: 'bold',
+        color: theme.colors.primary,
+        fontFamily: theme.fonts.title500,
     },
     bookDescription: {
         fontSize: 16,
         lineHeight: 24,
         color: theme.colors.secondary80,
+        flexWrap: 'wrap',
+        marginTop: 5,
+        marginVertical: 5
     },
     readButton: {
         marginTop: 10,
@@ -70,6 +81,8 @@ export const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#ccc',
         paddingBottom: 10,
+        backgroundColor:'#f0f0f0',
+        borderRadius: 20,
     },
     userIcon: {
         marginRight: 10,
@@ -96,7 +109,8 @@ export const styles = StyleSheet.create({
     },
     commentDate: {
         fontSize: 12,
-        color: '#888',
+        color: theme.colors.primary,
+        fontWeight: 'bold',
     },
     commentsList: {
         flexGrow: 0,
@@ -126,4 +140,21 @@ export const styles = StyleSheet.create({
     backArrowColor: {
         color: theme.colors.secondary55,
     },
+    toggleDescriptionText: {
+        color: theme.colors.primary,
+        marginTop: 5,
+        fontWeight: 'bold',
+    },
+    pagination: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginVertical: 10,
+      },
+      paginationDot: {
+        fontSize: 30,
+        color: '#ccc',
+      },
+      activeDot: {
+        color: '#000',
+      },
 });

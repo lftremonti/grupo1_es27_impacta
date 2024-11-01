@@ -1,10 +1,9 @@
 import config from "../../config/config";
 import * as SecureStorage from "expo-secure-store";
 
-export async function getUserByEmailService(email: string) {
+export async function getAllCategoryService() {
     try {
         const token = await SecureStorage.getItemAsync('userToken');
-        
         // Define os headers dinamicamente com base no token
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
@@ -12,9 +11,9 @@ export async function getUserByEmailService(email: string) {
             'Authorization': `Bearer ${token || process.env.BYPASS_TOKEN_KEY}`,
         };
 
-        const response = await fetch(`${config.BASE_URL}/api/users/email/${email}`, {
+        const response = await fetch(`${config.BASE_URL}/api/categoryBooks/getActiveCategoriesWithBooks`, {
             method: 'GET',
-            headers: headers, // Usa os headers definidos dinamicamente
+            headers: headers,
         });
 
         if (!response.ok) {
@@ -24,7 +23,7 @@ export async function getUserByEmailService(email: string) {
         const result = await response.json();
         return result;
     } catch (error) {
-        console.log(`Error ao consultar o email do usuario no banco: ${config.BASE_URL}`, error);
-        throw new Error('Error ao consultar o email do usuario no banco.');
+        console.log(`Error ao buscar as categorias no banco: ${config.BASE_URL}`, error);
+        throw new Error('Error ao buscar as categorias no banco de dados');
     }
 }
