@@ -1,5 +1,19 @@
 const pool = require('../config/db');
 
+// Criar avaliação para um livro
+const createReviewsBook = async (reviews) => {
+    try {
+        const query = `INSERT INTO ${process.env.DB_SCHEMA}.Avaliacoes (LivroID, UsuarioID, pontuacao, comentario, data_avaliacao) 
+                        VALUES ($1, $2, $3, $4, $5) RETURNING *`;
+        const values = [reviews.livroId, reviews.usuarioId, reviews.pontuacao, reviews.comentario, reviews.data_avaliacao];
+        const result = await pool.query(query, values);
+        return result.rows[0];
+    } catch (error) {
+        console.error('Error creating book:', error);
+        throw error;
+    }
+};
+
 // Buscar as avaliações de um livro pelo ID
 const findReviewsByIdBook = async (id) => {
     try {
@@ -47,4 +61,4 @@ const findReviewsAverageByIdBook = async (id) => {
     }
 };
 
-module.exports = { findReviewsByIdBook, findReviewsAverageByIdBook };
+module.exports = { findReviewsByIdBook, findReviewsAverageByIdBook, createReviewsBook };

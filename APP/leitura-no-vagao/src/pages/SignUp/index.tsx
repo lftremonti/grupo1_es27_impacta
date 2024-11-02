@@ -85,7 +85,7 @@ export function SignUp() {
       };
 
       await saveUserService(newUser); // Salvar o novo usuário
-      showDialog('Cadastro realizado com sucesso', `Bem-vindo, ${name}!\nAgora e possivel realizar o login 😄`, 'success');
+        
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       showDialog('Erro', `Lamentamos pelo ocorrido. Por favor, tente novamente.`, 'fail');
