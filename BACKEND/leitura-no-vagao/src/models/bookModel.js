@@ -33,8 +33,6 @@ const updateBook = async (id, book) => {
 const findById = async (id) => {
     try {
         const result = await pool.query(`SELECT * FROM ${process.env.DB_SCHEMA}.Livros WHERE ad_livros_id = $1 AND ativo = 'Y'`, [id]);
-        console.log("Id: ", id)
-        console.log(result);
         return result.rows[0];
     } catch (error) {
         console.error('Error fetching book:', error);
@@ -50,7 +48,7 @@ const findAllBooks = async (limit, offset, categoryId) => {
             FROM ${process.env.DB_SCHEMA}.Livros L
             LEFT JOIN ${process.env.DB_SCHEMA}.LivroImagens LI ON L.ad_livros_id = LI.LivroID
             LEFT JOIN ${process.env.DB_SCHEMA}.Imagem I ON LI.ImagemID = I.ad_imagem_id
-            ${categoryId ? 'INNER JOIN LivroCategorias LC ON L.ad_livros_id = LC.LivroID' : ''}
+            ${categoryId ? `INNER JOIN ${process.env.DB_SCHEMA}.LivroCategorias LC ON L.ad_livros_id = LC.LivroID` : ''}
             WHERE L.ativo = 'Y' AND i.is_default = TRUE
             ${categoryId ? 'AND LC.CategoriaID = $3' : ''}
             LIMIT $1 OFFSET $2;
@@ -83,7 +81,7 @@ const deleteBookById = async (id) => {
 // Função para buscar um livro pelo ISBN10 ou ISBN13 no banco de dados
 const getBookByISBN = async (isbn) => {
     try {
-        const query = `SELECT * FROM Livros WHERE ISBN10 = $1 OR ISBN13 = $1`;
+        const query = `SELECT * FROM ${process.env.DB_SCHEMA}.Livros WHERE ISBN10 = $1 OR ISBN13 = $1`;
         const result = await pool.query(query, [isbn]);
         return result.rows[0]; // Retorna o livro encontrado ou undefined
     } catch (error) {
@@ -99,22 +97,22 @@ const getFeaturedBooks = async (limit, offset, categoryId) => {
             SELECT DISTINCT L.*, 
                 COALESCE(LEITURAS.popularidade, 0) + COALESCE(SALVOS.salvos, 0) AS popularidade,
                 I.URLImagem AS imagem_url, I.ImagemBase64 AS imagem_base64
-            FROM Livros L
+            FROM ${process.env.DB_SCHEMA}.Livros L
             LEFT JOIN (
                 SELECT HL.LivroID, COUNT(HL.LivroID) AS popularidade
-                FROM HistoricoLivros HL
-                JOIN StatusLivros SL ON HL.StatusID = SL.ad_status_id
+                FROM ${process.env.DB_SCHEMA}.HistoricoLivros HL
+                JOIN ${process.env.DB_SCHEMA}.StatusLivros SL ON HL.StatusID = SL.ad_status_id
                 WHERE SL.nome IN ('Concluído', 'Em andamento')
                 GROUP BY HL.LivroID
             ) LEITURAS ON L.ad_livros_id = LEITURAS.LivroID
             LEFT JOIN (
                 SELECT LS.LivroID, COUNT(LS.LivroID) AS salvos
-                FROM LivrosSalvos LS
+                FROM ${process.env.DB_SCHEMA}.LivrosSalvos LS
                 GROUP BY LS.LivroID
             ) SALVOS ON L.ad_livros_id = SALVOS.LivroID
-            LEFT JOIN LivroImagens LI ON L.ad_livros_id = LI.LivroID
-            LEFT JOIN Imagem I ON LI.ImagemID = I.ad_imagem_id AND I.is_default = TRUE
-            ${categoryId ? 'INNER JOIN LivroCategorias LC ON L.ad_livros_id = LC.LivroID' : ''}
+            LEFT JOIN ${process.env.DB_SCHEMA}.LivroImagens LI ON L.ad_livros_id = LI.LivroID
+            LEFT JOIN ${process.env.DB_SCHEMA}.Imagem I ON LI.ImagemID = I.ad_imagem_id AND I.is_default = TRUE
+            ${categoryId ? `INNER JOIN ${process.env.DB_SCHEMA}.LivroCategorias LC ON L.ad_livros_id = LC.LivroID` : ''}
             WHERE L.ativo = 'Y' AND I.is_default = TRUE
             ${categoryId ? 'AND LC.CategoriaID = $3' : ''}
             AND (COALESCE(LEITURAS.popularidade, 0) + COALESCE(SALVOS.salvos, 0)) > 0
@@ -144,7 +142,7 @@ const getTopRatedBooks = async (limit, offset, categoryId) => {
             JOIN ${process.env.DB_SCHEMA}.Avaliacoes A ON L.ad_livros_id = A.LivroID
             LEFT JOIN ${process.env.DB_SCHEMA}.LivroImagens LI ON L.ad_livros_id = LI.LivroID
             LEFT JOIN ${process.env.DB_SCHEMA}.Imagem I ON LI.ImagemID = I.ad_imagem_id
-            ${categoryId ? 'INNER JOIN LivroCategorias LC ON L.ad_livros_id = LC.LivroID' : ''}
+            ${categoryId ? `INNER JOIN ${process.env.DB_SCHEMA}.LivroCategorias LC ON L.ad_livros_id = LC.LivroID` : ''}
             WHERE L.ativo = 'Y' AND A.ativo = 'Y' AND I.is_default = true
             ${categoryId ? 'AND LC.CategoriaID = $3' : ''}
             GROUP BY L.ad_livros_id, I.ad_imagem_id
@@ -212,7 +210,7 @@ const getNewArrivals = async (limit, offset, categoryId) => {
             FROM ${process.env.DB_SCHEMA}.Livros L
             LEFT JOIN ${process.env.DB_SCHEMA}.LivroImagens LI ON L.ad_livros_id = LI.LivroID
             LEFT JOIN ${process.env.DB_SCHEMA}.Imagem I ON LI.ImagemID = I.ad_imagem_id
-            ${categoryId ? 'INNER JOIN LivroCategorias LC ON L.ad_livros_id = LC.LivroID' : ''}
+            ${categoryId ? `INNER JOIN ${process.env.DB_SCHEMA}.LivroCategorias LC ON L.ad_livros_id = LC.LivroID` : ''}
             WHERE L.ativo = 'Y' AND I.is_default = TRUE
             ${categoryId ? 'AND LC.CategoriaID = $3' : ''}
             ORDER BY L.criado DESC
@@ -243,11 +241,11 @@ const findBookImageById = async (id) => {
                 i.URLImagem AS imagem_url,
                 i.ImagemBase64 AS imagem_base64
             FROM 
-                Livros l
+                ${process.env.DB_SCHEMA}.Livros l
             LEFT JOIN 
-            LivroImagens li ON l.ad_livros_id = li.LivroID
+                ${process.env.DB_SCHEMA}.LivroImagens li ON l.ad_livros_id = li.LivroID
             LEFT JOIN 
-                Imagem i ON li.ImagemID = i.ad_imagem_id
+                ${process.env.DB_SCHEMA}.Imagem i ON li.ImagemID = i.ad_imagem_id
             WHERE 
                 l.ad_livros_id = $1
                 AND l.ativo = 'Y' 
@@ -257,7 +255,7 @@ const findBookImageById = async (id) => {
         const result = await pool.query(query, [id]);
         return result.rows;
     } catch (error) {
-        console.error('Error fetching book:', error);
+        console.error('Error ao buscar as imagens do livro:', error);
         throw error;
     }
 };

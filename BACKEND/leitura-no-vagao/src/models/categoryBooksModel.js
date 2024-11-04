@@ -64,7 +64,7 @@ const findCategoryById = async (id) => {
         console.log(result);
         return result.rows[0];
     } catch (error) {
-        console.error('Error fetching book:', error);
+        console.error('Error encontrar as categorias:', error);
         throw error;
     }
 };

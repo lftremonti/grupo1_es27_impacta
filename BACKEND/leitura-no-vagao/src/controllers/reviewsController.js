@@ -23,4 +23,51 @@ const createReviewsBook = async (req, res, next) => {
     }
 };
 
-module.exports = { createReviewsBook };
+
+const getAllReviews = async (req, res, next) => {
+    try {
+        //Busca todas as avaliações
+        const reviews = await reviewsBookModel.findAllReviews();
+
+        //Caso não encontre devolve a resposta de erro
+        if (!reviews) return res.status(404).json({ error: 'Avaliações não existem' });
+
+        return successResponse(res, 200, 'Avaliações Encontradas!', { reviews: reviews });
+    } catch (error) {
+        next(new ApiError(500, 'Server error', err.message));
+    }
+};
+
+// Busca avaliação pelo ID
+const getReviewsById = async (req, res, next) => {
+    const { id } = req.params;
+    try {
+        //Busca avaliações pelo ID
+        const reviews = await reviewsBookModel.findReviewsById(id);
+
+        //Caso não encontre devolve a resposta do erro
+        if (!reviews) return res.status(404).json({ error: 'Avaliação não existe' });
+
+        return successResponse(res, 200, 'Avaliação Encontrada!', { reviews: reviews });
+    } catch (error) {
+        next(new ApiError(500, 'Server error', err.message));
+    }
+};
+
+// Busca todas as avaliações pelo ID do livro selecionado
+const getReviewsByBookId = async (req, res, next) => {
+    const { id } = req.params;
+    try {
+        //Busca as avaliações pelo Id do livro selecionado
+        const reviews = await reviewsBookModel.findReviewsByIdBook(id);
+
+        //Caso não encontre devolve a resposta do erro
+        if (!reviews) return res.status(404).json({ error: 'Avaliações não encontradas' });
+
+        return successResponse(res, 200, 'Avaliações Encontradas!', { reviews: reviews });
+    } catch (error) {
+        next(new ApiError(500, 'Server error', err.message));
+    }
+};
+
+module.exports = { createReviewsBook, getAllReviews, getReviewsById, getReviewsByBookId };

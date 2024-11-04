@@ -9,7 +9,31 @@ const createReviewsBook = async (reviews) => {
         const result = await pool.query(query, values);
         return result.rows[0];
     } catch (error) {
-        console.error('Error creating book:', error);
+        console.error('Error ao criar avaliação: ', error);
+        throw error;
+    }
+};
+
+// Buscar todas as avaliações
+const findAllReviews = async () => {
+    try {
+        const query = `SELECT * FROM ${process.env.DB_SCHEMA}.Avaliacoes WHERE ativo = 'Y'`;
+        const result = await pool.query(query);
+        return result.rows;
+    } catch (error) {
+        console.error('Error ao listar todas as avaliações: ', error);
+        throw error;
+    }
+};
+
+// Busca avaliação pelo ID
+const findReviewsById = async (id) => {
+    try {
+        const query = `SELECT * FROM ${process.env.DB_SCHEMA}.Avaliacoes WHERE ad_avaliacoes_id = $1 AND ativo = 'Y'`;
+        const result = await pool.query(query, [id]);
+        return result.rows;
+    } catch (error) {
+        console.error('Error ao buscar avaliação por id: ', error);
         throw error;
     }
 };
@@ -27,16 +51,16 @@ const findReviewsByIdBook = async (id) => {
             a.comentario,
             a.data_avaliacao
         FROM 
-            avaliacoes a
+            ${process.env.DB_SCHEMA}.Avaliacoes a
         LEFT join
-            usuarios u on u.ad_usuario_id = a.usuarioid
+            ${process.env.DB_SCHEMA}.Usuarios u on u.ad_usuario_id = a.usuarioid
         WHERE 
             a.LivroID = $1 AND a.ativo = 'Y';
         `;
         const result = await pool.query(query, [id]);
         return result.rows;
     } catch (error) {
-        console.error('Error fetching book:', error);
+        console.error('Error ao buscar as avaliações do livro:', error);
         throw error;
     }
 };
@@ -49,16 +73,16 @@ const findReviewsAverageByIdBook = async (id) => {
                 AVG(a.pontuacao) AS media_avaliacao,
                 COUNT(a.ad_avaliacoes_id) AS total_avaliacoes
             FROM 
-                avaliacoes a
+                ${process.env.DB_SCHEMA}.Avaliacoes a
             WHERE 
                 a.LivroID = $1 AND a.ativo = 'Y';
         `;
         const result = await pool.query(query, [id]);
         return result.rows;
     } catch (error) {
-        console.error('Error fetching book:', error);
+        console.error('Error ao buscar a media das avaliações do livro:', error);
         throw error;
     }
 };
 
-module.exports = { findReviewsByIdBook, findReviewsAverageByIdBook, createReviewsBook };
+module.exports = { findReviewsByIdBook, findReviewsAverageByIdBook, createReviewsBook, findAllReviews, findReviewsById };
