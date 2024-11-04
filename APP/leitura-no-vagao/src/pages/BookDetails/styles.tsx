@@ -149,12 +149,81 @@ export const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         marginVertical: 10,
-      },
-      paginationDot: {
+    },
+    paginationDot: {
         fontSize: 30,
         color: '#ccc',
-      },
-      activeDot: {
+    },
+    activeDot: {
         color: '#000',
-      },
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContainer: {
+        width: '80%',
+        backgroundColor: '#FFFFFF',
+        padding: 16,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 16,
+        color: '#333333',
+    },
+    modalItem: {
+        paddingVertical: 8,
+        width: '100%',
+        alignItems: 'center',
+    },
+    modalItemText: {
+        fontSize: 16,
+        color: '#333333',
+    },
+    modalCloseButton: {
+        marginTop: 16,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 4,
+    },
+    modalCloseButtonText: {
+        fontSize: 16,
+        color: '#333333',
+    },
+    commentInput: {
+        width: '100%',
+        height: 100,
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 15,
+        textAlignVertical: 'top', // ensures text starts at the top of the box
+        fontSize: 16,
+        color: '#333',
+    },
+    selectedStar: {
+        color: '#FFD700', // gold color for selected stars
+    },
+    starRatingContainer: {
+        flexDirection: 'row',
+        marginVertical: 10,
+    },
+    ratingPrompt: {
+        fontSize: 16,
+        marginVertical: 10,
+        color: '#333',
+    },
+    commentStart:{
+        fontSize: 30,
+        color: '#FFF', // start with white fill for unselected
+        textShadowColor: '#FFD700', // gold color border
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
+    }
 });

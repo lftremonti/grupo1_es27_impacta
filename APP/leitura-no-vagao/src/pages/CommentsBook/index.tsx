@@ -2,11 +2,13 @@ import { RouteProp } from "@react-navigation/native";
 import React, { useState } from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../routes/app.routes";
-import { FlatList, Text, TouchableOpacity, View, Modal, TextInput  } from "react-native";
+import { FlatList, Text, TouchableOpacity, View, Modal, TextInput, TouchableWithoutFeedback, Keyboard  } from "react-native";
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from './styles';
-import { createReviewsBookService } from '../../services/ReviewsBookService/ReviewsBookService';
+import { createReviewsBookService, getReviewsBookByIdService} from '../../services/ReviewsBookService/ReviewsBookService';
+import { ActivityIndicator, Provider as PaperProvider } from 'react-native-paper';
+import CustomDialog from '../../components/CustomDialog';
 import { ReviewsBook } from "../../types/ReviewsBook";
 import * as SecureStore from 'expo-secure-store';
 
@@ -16,7 +18,8 @@ type CommentsBookProps = {
 };
 
 export default function CommentsBook({ route, navigation }: CommentsBookProps) {
-    const { reviews, averageRating } = route.params;
+    const { reviews: initialReviews, averageRating } = route.params;
+    const [reviews, setReviews] = useState(initialReviews);
     const [selectedRating, setSelectedRating] = useState<number | null>(null);
     const { book } = route.params;
     const [selectedSortOption, setSelectedSortOption] = useState("Mais Recentes");
@@ -24,8 +27,9 @@ export default function CommentsBook({ route, navigation }: CommentsBookProps) {
     const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
     const [commentText, setCommentText] = useState("");
     const [userRating, setUserRating] = useState(0);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    const [errors, setErrors] = useState({ name: false, email: false, phone: false, password: false, confirmPassword: false });
+    const [errors, setErrors] = useState({ commentText: false });
 
     const [visible, setVisible] = useState<boolean>(false);
     const [dialogTitle, setDialogTitle] = useState<string>('');
@@ -39,18 +43,39 @@ export default function CommentsBook({ route, navigation }: CommentsBookProps) {
         setVisible(true);
     };
 
+    // Função para buscar as avaliações do livro pelo ID
+    const fetchBookReviews = async (bookId: number) => {
+        try {
+            const response = await getReviewsBookByIdService(bookId);
+            if (response.status === 200) {
+                // Atualizar o estado com as avaliações recebidas
+                setReviews(response.data.reviews);
+            }
+        } catch (error) {
+            console.error("Erro ao buscar avaliações:", error);
+        }
+    };
+
     const hideDialog = () => {
         setVisible(false);
         if (dialogType === 'success') {
             //Fechar o modal
+            closeCommentModal();
+
+            // Chamar a função para buscar as avaliações do livro
+            fetchBookReviews(book.ad_livros_id);
         }
     };
 
+    //Abre o modal dos comentarios
     const openCommentModal = () => setIsCommentModalVisible(true);
+
+    //Fecha o modal dos comentarios
     const closeCommentModal = () => {
         setIsCommentModalVisible(false);
         setCommentText("");
         setUserRating(0);
+        setErrors({ commentText: false });
     };
 
     const sortOptions = [
@@ -97,7 +122,6 @@ export default function CommentsBook({ route, navigation }: CommentsBookProps) {
         </View>
     );
     
-
     const renderReview = ({ item }: { item: typeof reviews[0] }) => (
         <View style={styles.commentContainer}>
             <Ionicons name="person-circle-outline" size={45} style={styles.userIcon} />
@@ -151,6 +175,11 @@ export default function CommentsBook({ route, navigation }: CommentsBookProps) {
 
     const handleSaveReview = async () => {
         try {
+            // Resetar erros
+            setErrors({ commentText: false });
+
+            setIsLoading(true);
+
             const usuarioId = await getUserId();
 
             if (usuarioId === null) {
@@ -166,128 +195,162 @@ export default function CommentsBook({ route, navigation }: CommentsBookProps) {
                 data_avaliacao: new Date().toISOString().split('T')[0]
             };
 
-            console.log(newReview);
+            // Verifica se os campos estão vazios
+            const newErrors = {
+                commentText: !commentText,
+            };
 
-            //await createReviewsBookService(newReview);
-            alert("Avaliação salva com sucesso!");
+            // Mostrar a caixa de erro pedindo que o usuário não preencheu todos os campos
+            if (newErrors.commentText) {
+                setErrors(newErrors);
+                return;
+            }
 
-            // Após salvar, atualize a lista de avaliações, se necessário
-            closeCommentModal();
+            const response = await createReviewsBookService(newReview);
+
+            // Verifica se o status da resposta é 201 e se o tipo é "success"
+            if (response.status === 201 && response.type === "success") {
+                closeCommentModal(); // Fecha o modal
+                showDialog("Sucesso", "Avaliação salva com sucesso!", 'success'); // Exibe o diálogo
+            } else {
+                // Aqui você pode tratar outros casos, como falhas na criação da avaliação
+                closeCommentModal();
+                showDialog("Erro", "Ocorreu um erro ao salvar a avaliação.", 'fail');
+            }
+
         } catch (error) {
+            closeCommentModal();
             console.error("Erro ao salvar a avaliação:", error);
-            alert("Erro ao salvar a avaliação. Tente novamente.");
+            showDialog('Erro', "Erro ao salvar a avaliação. Tente novamente.", 'fail');
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
-        <View style={styles.container}>
-            <Text></Text>
-            <TouchableOpacity onPress={() => navigation.navigate('BookDetails', { book: book })} style={styles.backButton}>
-                <Icon name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
-            </TouchableOpacity>
-
-            <Text style={styles.title}>Avaliações dos usuarios</Text>
-            {averageRating && Number(averageRating.total_avaliacoes) > 0 && (
-                <View style={styles.bookRatingContainer}>
-                    <View  style={{flexDirection: 'row', justifyContent: "center", alignItems: "center"}}>
-                        <Text style={styles.bookRatingAverage}>{Number(averageRating.media_avaliacao).toFixed(1)}</Text>
-                        <Text style={styles.bookRatingStars}>{'★'.repeat(Number(averageRating.media_avaliacao))}</Text>
-                    </View>
-                    <TouchableOpacity onPress={openCommentModal}>
-                        <Text style={{fontWeight: 'bold'}}>Escreva um comentario</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
-
-            {renderStarRating()}
-            
-            <View style={[styles.sortContainer, {borderBottomWidth: 1, borderBottomColor: '#ccc', paddingBottom: 0,}]}>
-                <Text style={{fontWeight: 'bold'}}>Total de avaliações: {reviews.length}</Text>
-                <TouchableOpacity onPress={openSortModal} style={[styles.sortButton, {marginBottom: 10}]}>
-                    <Text style={styles.sortButtonText}>{selectedSortOption}</Text>
+        <PaperProvider>
+            <View style={styles.container}>
+                <Text></Text>
+                <TouchableOpacity onPress={() => navigation.navigate('BookDetails', { book: book })} style={styles.backButton}>
+                    <Icon name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
                 </TouchableOpacity>
-            </View>
 
-            <FlatList
-                data={filteredReviews}
-                renderItem={renderReview}
-                keyExtractor={(item) => `review-${item.ad_avaliacoes_id}`}
-                style={{ marginTop: 5 }}
-                showsHorizontalScrollIndicator={false}
-            />
-
-            {/**Modal para ordernar os comentarios */}
-            <Modal
-                transparent
-                visible={isSortModalVisible}
-                animationType="slide"
-                onRequestClose={closeSortModal}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                        <Text style={styles.modalTitle}>Ordenar por</Text>
-                        <FlatList
-                            data={sortOptions}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity 
-                                    style={styles.modalItem} 
-                                    onPress={() => selectSortOption(item.value)}
-                                >
-                                    <Text style={styles.modalItemText}>{item.label}</Text>
-                                </TouchableOpacity>
-                            )}
-                            keyExtractor={(item) => item.value}
-                        />
-                        <TouchableOpacity onPress={closeSortModal} style={styles.modalCloseButton}>
-                            <Text style={styles.modalCloseButtonText}>Cancelar</Text>
+                <Text style={styles.title}>Avaliações dos usuarios</Text>
+                {averageRating && Number(averageRating.total_avaliacoes) > 0 && (
+                    <View style={styles.bookRatingContainer}>
+                        <View  style={{flexDirection: 'row', justifyContent: "center", alignItems: "center"}}>
+                            <Text style={styles.bookRatingAverage}>{Number(averageRating.media_avaliacao).toFixed(1)}</Text>
+                            <Text style={styles.bookRatingStars}>{'★'.repeat(Number(averageRating.media_avaliacao))}</Text>
+                        </View>
+                        <TouchableOpacity onPress={openCommentModal}>
+                            <Text style={{fontWeight: 'bold'}}>Escreva um comentario</Text>
                         </TouchableOpacity>
                     </View>
+                )}
+
+                {renderStarRating()}
+                
+                <View style={[styles.sortContainer, {borderBottomWidth: 1, borderBottomColor: '#ccc', paddingBottom: 0,}]}>
+                    <Text style={{fontWeight: 'bold'}}>Total de avaliações: {reviews.length}</Text>
+                    <TouchableOpacity onPress={openSortModal} style={[styles.sortButton, {marginBottom: 10}]}>
+                        <Text style={styles.sortButtonText}>{selectedSortOption}</Text>
+                    </TouchableOpacity>
                 </View>
-            </Modal>
 
+                <FlatList
+                    data={filteredReviews}
+                    renderItem={renderReview}
+                    keyExtractor={(item) => `review-${item.ad_avaliacoes_id}`}
+                    style={{ marginTop: 5 }}
+                    showsHorizontalScrollIndicator={false}
+                />
 
-            <Modal
-                transparent
-                visible={isCommentModalVisible}
-                animationType="slide"
-                onRequestClose={closeCommentModal}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                        <Text style={styles.modalTitle}>Escreva sua avaliação</Text>
-                        <TextInput
-                            style={styles.commentInput}
-                            placeholder="Digite seu comentário aqui"
-                            value={commentText}
-                            onChangeText={setCommentText}
-                            multiline
-                        />
-                        <Text style={styles.ratingPrompt}>Como você classificaria?</Text>
-                        <View style={styles.starRatingContainer}>
-                            {[1, 2, 3, 4, 5].map(rating => (
-                                <TouchableOpacity
-                                    key={rating}
-                                    onPress={() => setUserRating(rating)}
-                                >
-                                    <Text style={[
-                                        styles.commentStart,
-                                        userRating >= rating && styles.selectedStar
-                                    ]}>★</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                        <View style={{flexDirection: 'row', justifyContent: 'center', alignContent: "center"}}>
-                            <TouchableOpacity onPress={handleSaveReview} style={[styles.modalCloseButton, {backgroundColor: '#073F72', marginRight: 20}]}>
-                                <Text style={[styles.modalCloseButtonText, {color:'#FFF'}]}>Salvar</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={closeCommentModal} style={[styles.modalCloseButton, {backgroundColor: '#073F72'}]}>
-                                <Text style={[styles.modalCloseButtonText, {color:'#FFF'}]}>Cancelar</Text>
+                {/**Modal para ordernar os comentarios */}
+                <Modal
+                    transparent
+                    visible={isSortModalVisible}
+                    animationType="slide"
+                    onRequestClose={closeSortModal}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContainer}>
+                            <Text style={styles.modalTitle}>Ordenar por</Text>
+                            <FlatList
+                                data={sortOptions}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity 
+                                        style={styles.modalItem} 
+                                        onPress={() => selectSortOption(item.value)}
+                                    >
+                                        <Text style={styles.modalItemText}>{item.label}</Text>
+                                    </TouchableOpacity>
+                                )}
+                                keyExtractor={(item) => item.value}
+                            />
+                            <TouchableOpacity onPress={closeSortModal} style={styles.modalCloseButton}>
+                                <Text style={styles.modalCloseButtonText}>Cancelar</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
-                </View>
-            </Modal>
-
-        </View>
+                </Modal>
+                
+                <Modal
+                    transparent
+                    visible={isCommentModalVisible}
+                    animationType="slide"
+                    onRequestClose={closeCommentModal}
+                >
+                    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                        <View style={styles.modalOverlay}>
+                            <View style={styles.modalContainer}>
+                                <Text style={styles.modalTitle}>Escreva sua avaliação</Text>
+                                <TextInput
+                                    style={[styles.commentInput, errors.commentText && { borderColor: 'red', borderWidth: 1 }]}
+                                    placeholder="Digite seu comentário aqui"
+                                    value={commentText}
+                                    onChangeText={setCommentText}
+                                    multiline
+                                />
+                                <Text style={styles.ratingPrompt}>Como você classificaria?</Text>
+                                <View style={styles.starRatingContainer}>
+                                    {[1, 2, 3, 4, 5].map(rating => (
+                                        <TouchableOpacity
+                                            key={rating}
+                                            onPress={() => setUserRating(rating)}
+                                        >
+                                            <Text style={[
+                                                styles.commentStart,
+                                                userRating >= rating && styles.selectedStar
+                                            ]}>★</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                                <View style={{flexDirection: 'row', justifyContent: 'center', alignContent: "center"}}>
+                                    {isLoading ? (
+                                        <TouchableOpacity style={[styles.modalCloseButton, {backgroundColor: '#073F72', marginRight: 20}]}>
+                                            <ActivityIndicator size="small" color="#FFFFFF" />
+                                        </TouchableOpacity>
+                                    ) : ( 
+                                        <TouchableOpacity onPress={handleSaveReview} style={[styles.modalCloseButton, {backgroundColor: '#073F72', marginRight: 20}]}>
+                                            <Text style={[styles.modalCloseButtonText, {color:'#FFF'}]}>Salvar</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                    <TouchableOpacity onPress={closeCommentModal} style={[styles.modalCloseButton, {backgroundColor: '#073F72'}]}>
+                                        <Text style={[styles.modalCloseButtonText, {color:'#FFF'}]}>Cancelar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </Modal>
+            </View>
+            <CustomDialog
+                visible={visible}
+                hideDialog={hideDialog}
+                title={dialogTitle}
+                message={dialogMessage}
+                type={dialogType}
+            />
+        </PaperProvider>
     );
 }

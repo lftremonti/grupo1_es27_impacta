@@ -63,8 +63,7 @@ const styles = StyleSheet.create({
   dialog: {
     backgroundColor: 'white',
     padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderRadius: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -80,11 +79,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
+    color: '#030202'
   },
   message: {
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 20,
+    color: '#030202'
   },
   button: {
     marginTop: 10,

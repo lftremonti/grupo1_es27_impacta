@@ -62,7 +62,7 @@ export async function signInGoogleService(email: string, idAuthGoogle: string) {
         const result = await response.json();
         return result;
     } catch (error) {
-        console.log(`Error ao consultar o email do usuario no banco: ${config.BASE_URL}`, error);
+        console.error(`Error ao consultar o email do usuario no banco: ${config.BASE_URL}`, error);
         throw new Error('Error ao consultar o email do usuario no banco.');
     }
 }

@@ -4,7 +4,9 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator
+  ActivityIndicator,
+  TouchableWithoutFeedback,
+  Keyboard
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -105,60 +107,62 @@ export function PasswordResetScreen() {
         message={dialogMessage}
         type={dialogType}
       />
-      <View style={styles.container}>
-        <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()}>
-          <Text style={styles.welcome}>Redefinir senha</Text>
-          <Text style={styles.instructions}>Preencha os campos abaixo para redefinir sua senha.</Text>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()}>
+            <Text style={styles.welcome}>Redefinir senha</Text>
+            <Text style={styles.instructions}>Preencha os campos abaixo para redefinir sua senha.</Text>
 
-          <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
-            <Text style={styles.label}>Senha</Text>
-            <View style={[styles.inputWrapper, errors.password && { borderColor: 'red', borderWidth: 1 }]}>
-              <TextInput
-                style={styles.inputPassword}
-                placeholder="Digite sua nova senha"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!isPasswordVisible}
-              />
-              <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-                <Icon name={isPasswordVisible ? 'eye-off' : 'eye'} size={20} color="gray" />
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
+            <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
+              <Text style={styles.label}>Senha</Text>
+              <View style={[styles.inputWrapper, errors.password && { borderColor: 'red', borderWidth: 1 }]}>
+                <TextInput
+                  style={styles.inputPassword}
+                  placeholder="Digite sua nova senha"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!isPasswordVisible}
+                />
+                <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
+                  <Icon name={isPasswordVisible ? 'eye-off' : 'eye'} size={20} color="gray" />
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
 
-          <Animated.View entering={FadeInDown.delay(650).duration(5000).springify()}>
-            <Text style={styles.label}>Confirmar senha</Text>
-            <View style={[styles.inputWrapper, errors.confirmPassword && { borderColor: 'red', borderWidth: 1 }]}>
-              <TextInput
-                style={styles.inputPassword}
-                placeholder="Confirme sua nova senha"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry={!isConfirmPasswordVisible}
-              />
-              <TouchableOpacity onPress={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}>
-                <Icon name={isConfirmPasswordVisible ? 'eye-off' : 'eye'} size={20} color="gray" />
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
+            <Animated.View entering={FadeInDown.delay(650).duration(5000).springify()}>
+              <Text style={styles.label}>Confirmar senha</Text>
+              <View style={[styles.inputWrapper, errors.confirmPassword && { borderColor: 'red', borderWidth: 1 }]}>
+                <TextInput
+                  style={styles.inputPassword}
+                  placeholder="Confirme sua nova senha"
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  secureTextEntry={!isConfirmPasswordVisible}
+                />
+                <TouchableOpacity onPress={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}>
+                  <Icon name={isConfirmPasswordVisible ? 'eye-off' : 'eye'} size={20} color="gray" />
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
 
-          <Animated.View entering={FadeInDown.delay(850).duration(5000).springify()}>
-            {isLoading ? (
-              <TouchableOpacity style={styles.button}>
-                <ActivityIndicator size="large" color="#FFFFFF" />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                <Text style={styles.buttonText}>Redefinir Senha</Text>
-              </TouchableOpacity>
-            )}
-          </Animated.View>
+            <Animated.View entering={FadeInDown.delay(850).duration(5000).springify()}>
+              {isLoading ? (
+                <TouchableOpacity style={styles.button}>
+                  <ActivityIndicator size="large" color="#FFFFFF" />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+                  <Text style={styles.buttonText}>Redefinir Senha</Text>
+                </TouchableOpacity>
+              )}
+            </Animated.View>
 
-          <Animated.View entering={FadeInDown.delay(1050).duration(5000).springify()}>
-            <ProgressBar progress={progress} duration={1000}/>
+            <Animated.View entering={FadeInDown.delay(1050).duration(5000).springify()}>
+              <ProgressBar progress={progress} duration={1000}/>
+            </Animated.View>
           </Animated.View>
-        </Animated.View>
-      </View>
+        </View>
+      </TouchableWithoutFeedback>
     </PaperProvider>
   );
 }

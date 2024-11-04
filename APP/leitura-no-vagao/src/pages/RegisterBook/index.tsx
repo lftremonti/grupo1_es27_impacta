@@ -5,7 +5,9 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  Alert
+  Alert,
+  TouchableWithoutFeedback,
+  Keyboard
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
@@ -93,58 +95,60 @@ export function RegisterBook() {
   };
 
   return (
-    <View style={styles.container}>
-      {scanned ? (
-        <CameraView style={styles.camera} onBarcodeScanned={handleBarCodeScanned}>
-          <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.button} onPress={closeCamera}>
-                  <Text style={styles.text}>Fechar Câmera</Text>
-              </TouchableOpacity>
-          </View>
-        </CameraView>
-      ) : (
-
-        <>
-          <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.backButton}>
-            <Ionicons name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
-          </TouchableOpacity>
-
-          <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()}>
-            <Text style={styles.welcome}>Doe um livro</Text>
-            <Text style={styles.instructions}>
-              Compartilhe o conhecimento e inspire outras pessoas! Doe seus livros e transforme vidas através da leitura.
-            </Text>
-
-            <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
-              <Text style={styles.label}>Nome do livro</Text>
-              <View style={styles.viewInput}>
-                <TextInput
-                  placeholder="O pequeno Príncipe"
-                  style={[styles.searchInput, styles.input]}
-                  value={bookName}
-                  onChangeText={setBookName}
-                />
-                <TouchableOpacity onPress={() => setScanned(true)}>
-                  <Ionicons name="camera" size={24} style={styles.searchIcon} />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        {scanned ? (
+          <CameraView style={styles.camera} onBarcodeScanned={handleBarCodeScanned}>
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.button} onPress={closeCamera}>
+                    <Text style={styles.text}>Fechar Câmera</Text>
                 </TouchableOpacity>
-              </View>
+            </View>
+          </CameraView>
+        ) : (
+
+          <>
+            <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.backButton}>
+              <Ionicons name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
+            </TouchableOpacity>
+
+            <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()}>
+              <Text style={styles.welcome}>Doe um livro</Text>
+              <Text style={styles.instructions}>
+                Compartilhe o conhecimento e inspire outras pessoas! Doe seus livros e transforme vidas através da leitura.
+              </Text>
+
+              <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
+                <Text style={styles.label}>Nome do livro</Text>
+                <View style={styles.viewInput}>
+                  <TextInput
+                    placeholder="O pequeno Príncipe"
+                    style={[styles.searchInput, styles.input]}
+                    value={bookName}
+                    onChangeText={setBookName}
+                  />
+                  <TouchableOpacity onPress={() => setScanned(true)}>
+                    <Ionicons name="camera" size={24} style={styles.searchIcon} />
+                  </TouchableOpacity>
+                </View>
+              </Animated.View>
+
+              <Animated.View entering={FadeInDown.delay(1450).duration(5000).springify()}>
+                {isLoading ? (
+                  <TouchableOpacity style={styles.button}>
+                    <ActivityIndicator size="large" color="#FFFFFF" />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={styles.button} onPress={() => {}}>
+                    <Text style={styles.buttonText}>Salvar</Text>
+                  </TouchableOpacity>
+                )}
+              </Animated.View>
+
             </Animated.View>
-
-            <Animated.View entering={FadeInDown.delay(1450).duration(5000).springify()}>
-              {isLoading ? (
-                <TouchableOpacity style={styles.button}>
-                  <ActivityIndicator size="large" color="#FFFFFF" />
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity style={styles.button} onPress={() => {}}>
-                  <Text style={styles.buttonText}>Salvar</Text>
-                </TouchableOpacity>
-              )}
-            </Animated.View>
-
-          </Animated.View>
-        </>
-      )}
-    </View>
+          </>
+        )}
+      </View>
+    </TouchableWithoutFeedback>
   );
 }

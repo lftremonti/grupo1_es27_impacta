@@ -40,13 +40,14 @@ export async function saveUserService(user: User) {
     });
 
     if (!response.ok) {
+      console.error(`Error: ${response.statusText}`)
       throw new Error(`Error: ${response.statusText}`);
     }
 
     const result = await response.json();
     return result; // Retorna a resposta do servidor
   } catch (error) {
-    console.log(`Error ao salvar o usuário no banco: ${config.BASE_URL}`, error);
+    console.error(`Error ao salvar o usuário no banco: ${config.BASE_URL}`, error);
     throw new Error('Error ao salvar o usuário no banco.');
   }
 }
