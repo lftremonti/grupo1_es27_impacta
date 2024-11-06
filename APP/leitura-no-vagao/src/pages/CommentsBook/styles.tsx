@@ -5,9 +5,10 @@ export const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
+        backgroundColor: '#FFFFFF',
     },
     title: {
-        fontSize: 32,
+        fontSize: 30,
         fontWeight: 'bold',
         fontFamily: theme.fonts.title700,
         color: theme.colors.primary,

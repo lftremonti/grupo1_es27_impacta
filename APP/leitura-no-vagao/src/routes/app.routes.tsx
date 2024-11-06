@@ -6,8 +6,9 @@ import { Home } from '../pages/Home';
 import { BookDetails } from '../pages/BookDetails';
 import { RegisterBook } from '../pages/RegisterBook';
 import CommentsBook from '../pages/CommentsBook';
+import { Profile } from '../pages/Profile';
 import { Book } from '../types/Book';
-import { User } from '../types/User'; // Importe a interface User
+import { User } from '../types/User';
 
 // Definir o tipo de parâmetros para o BookDetails
 export type RootStackParamList = {
@@ -15,6 +16,7 @@ export type RootStackParamList = {
   BookDetails: { book: Book };
   RegisterBook: undefined;
   CommentsBook: { reviews: Array<any>; averageRating: any; book: Book };
+  Profile: { user: User};
 };
 
 const Drawer = createDrawerNavigator<RootStackParamList>();
@@ -61,6 +63,13 @@ export function AppRoutes() {
         component={RegisterBook} 
         options={{
           title: 'Doar Livro',
+        }}
+      />
+      <Drawer.Screen
+        name="Profile"
+        component={Profile}
+        options={{
+          drawerItemStyle: { display: 'none' },
         }}
       />
     </Drawer.Navigator>

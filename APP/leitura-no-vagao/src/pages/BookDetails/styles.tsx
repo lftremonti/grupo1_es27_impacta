@@ -65,7 +65,6 @@ export const styles = StyleSheet.create({
     },
     loadMoreButton: {
         marginTop: 10,
-        marginBottom: 35,
         alignItems: 'center',
         paddingVertical: 10,
         backgroundColor: theme.colors.primary,

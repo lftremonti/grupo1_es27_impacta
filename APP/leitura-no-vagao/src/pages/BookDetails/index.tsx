@@ -324,7 +324,7 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
               <FlatList
                 data={bookReviews.slice(0, 3)} // Exibe os 3 primeiros comentários
                 renderItem={renderComment}
-                style={{marginTop: 10, marginBottom: 15}}
+                style={{marginTop: 10, marginBottom: 10}}
                 keyExtractor={(item, index) => `bookreviews-${item.ad_avaliacoes_id}-${index}`}
                 ListFooterComponent={
                   bookReviews.length > 3 ? (
@@ -335,13 +335,13 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
                 }
               />
             ) : (
-              <View style={[styles.commentContainer, {padding: 15, marginTop: 10, marginBottom: 40}]}>
+              <View style={[styles.commentContainer, {padding: 15, marginTop: 10, marginBottom: 10}]}>
                 <View style={styles.commentContent}>
                   <Text style={[styles.commentText, {justifyContent: 'center', alignItems:'center', textAlign:'center'}]}>Não ha avaliações de usuarios para esse livro.</Text>
                 </View>
               </View>
             )}
-            <TouchableOpacity style={styles.loadMoreButton} onPress={openCommentModal}>
+            <TouchableOpacity style={[styles.loadMoreButton, {marginBottom: 35}]} onPress={openCommentModal}>
               <Text style={styles.loadMoreText}>Escreva um comentario</Text>
             </TouchableOpacity>
           </View>
