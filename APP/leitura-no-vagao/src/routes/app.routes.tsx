@@ -4,16 +4,19 @@ import * as SecureStore from 'expo-secure-store'; // Não se esqueça de importa
 import CustomDrawer from '../components/CustomDrawer';
 import { Home } from '../pages/Home';
 import { BookDetails } from '../pages/BookDetails';
-import { User } from '../types/User'; // Importe a interface User
-import { RegisterBook } from '../pages/RegisterBook'
+import { RegisterBook } from '../pages/RegisterBook';
+import CommentsBook from '../pages/CommentsBook';
+import { Profile } from '../pages/Profile';
 import { Book } from '../types/Book';
+import { User } from '../types/User';
 
 // Definir o tipo de parâmetros para o BookDetails
 export type RootStackParamList = {
   Home: undefined;
   BookDetails: { book: Book };
   RegisterBook: undefined;
-  CommentsBook: undefined;
+  CommentsBook: { reviews: Array<any>; averageRating: any; book: Book };
+  Profile: { user: User};
 };
 
 const Drawer = createDrawerNavigator<RootStackParamList>();
@@ -48,11 +51,25 @@ export function AppRoutes() {
           drawerItemStyle: { display: 'none' },
         }}
       />
+      <Drawer.Screen
+        name="CommentsBook"
+        component={CommentsBook}
+        options={{
+          drawerItemStyle: { display: 'none' },
+        }}
+      />
       <Drawer.Screen 
         name="RegisterBook" 
         component={RegisterBook} 
         options={{
           title: 'Doar Livro',
+        }}
+      />
+      <Drawer.Screen
+        name="Profile"
+        component={Profile}
+        options={{
+          drawerItemStyle: { display: 'none' },
         }}
       />
     </Drawer.Navigator>

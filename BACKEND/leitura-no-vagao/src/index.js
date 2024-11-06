@@ -6,6 +6,8 @@ dotenv.config();
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const bookRoutes = require('./routes/bookRoutes');
+const categoryBooksRoutes = require('./routes/categoryBooksRoutes');
+const reviewsBooksRoutes = require('./routes/reviewsRoutes');
 
 // Importa o middleware de tratamento de erros personalizado.
 const errorHandler = require('./middlewares/errorHandler');
@@ -19,7 +21,9 @@ app.use(express.json());
 //Rotas
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/books', bookRoutes)
+app.use('/api/books', bookRoutes);
+app.use('/api/categoryBooks', categoryBooksRoutes);
+app.use('/api/reviews', reviewsBooksRoutes);
 
 //Middleware de tratamento de erros. Se qualquer rota ou operação lançar um erro, este middleware será chamado.
 app.use(errorHandler);

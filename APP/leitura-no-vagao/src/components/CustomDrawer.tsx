@@ -18,8 +18,6 @@ const CustomDrawer: React.FC<CustomDrawerProps> = ({ userData, ...props }) => {
   };
 
   useEffect(() => {
-    // Para depurar se o userData está sendo atualizado
-    console.log('User data updated:', userData);
   }, [userData]);
 
   return (
@@ -35,7 +33,15 @@ const CustomDrawer: React.FC<CustomDrawerProps> = ({ userData, ...props }) => {
           <DrawerItemList {...props} />
         </View>
       </DrawerContentScrollView>
-      <View style={{padding: 20, borderTopWidth: 1, borderTopColor: '#ccc'}}>
+      <View style={{padding: 20, borderTopWidth: 1, borderTopColor: '#ccc', backgroundColor: '#f0f0f0'}}>
+        <TouchableOpacity onPress={() => props.navigation.navigate('Profile', { user: userData })} style={{paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: '#ccc'}}>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Ionicons name="person-circle-outline" size={22} />
+            <Text style={{ fontSize: 15, marginLeft: 5}}>
+              Perfil
+            </Text>
+          </View>
+        </TouchableOpacity>
         <TouchableOpacity onPress={handleSignOut} style={{paddingVertical: 15}}>
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <Ionicons name="exit-outline" size={22} />

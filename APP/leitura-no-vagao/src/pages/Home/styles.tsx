@@ -69,6 +69,9 @@ export const styles = StyleSheet.create({
     bookTitle: {
         fontSize: 16,
         fontWeight: 'bold',
+        textAlign: 'center',
+        flexWrap: 'wrap',
+        maxWidth: 90,
     },
     bookAuthor: {
         fontSize: 14,
@@ -94,5 +97,53 @@ export const styles = StyleSheet.create({
     },
     inactiveCategoryText: {
         color: '#666',
+    },
+    loadMoreButton: {
+        marginRight: 15,
+        alignItems: 'center',
+    },
+    loadMoreContent: {
+        width: 100,
+        height: 150,
+        borderRadius: 10,
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent:'center',
+        backgroundColor: '#f0f0f0'
+    },
+    loadMoreText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginTop: 5,
+    },
+    bookSearchContainer:{
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+        backgroundColor: '#f0f0f0',
+        marginBottom: 10,
+        borderRadius: 10
+    },
+    bookSearchInfo:{
+        flex: 1,
+        padding: 20
+    },
+    bookSearchTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    bookSearchAuthor:{
+        fontSize: 14,
+        color: '#666',
+        textAlign: 'center',
+    },
+    loadingIndicator: {
+        backgroundColor: theme.colors.primary,
+        marginTop: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

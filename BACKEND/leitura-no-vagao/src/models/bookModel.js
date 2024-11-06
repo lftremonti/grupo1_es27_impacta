@@ -33,8 +33,6 @@ const updateBook = async (id, book) => {
 const findById = async (id) => {
     try {
         const result = await pool.query(`SELECT * FROM ${process.env.DB_SCHEMA}.Livros WHERE ad_livros_id = $1 AND ativo = 'Y'`, [id]);
-        console.log("Id: ", id)
-        console.log(result);
         return result.rows[0];
     } catch (error) {
         console.error('Error fetching book:', error);
@@ -43,10 +41,25 @@ const findById = async (id) => {
 };
 
 // Buscar todos os livros
-const findAllBooks = async () => {
+const findAllBooks = async (limit, offset, categoryId) => {
     try {
-        const query = `SELECT * FROM ${process.env.DB_SCHEMA}.Livros`;
-        const result = await pool.query(query);
+        const query = `
+            SELECT L.*, I.URLImagem AS imagem_url, I.ImagemBase64 AS imagem_base64
+            FROM ${process.env.DB_SCHEMA}.Livros L
+            LEFT JOIN ${process.env.DB_SCHEMA}.LivroImagens LI ON L.ad_livros_id = LI.LivroID
+            LEFT JOIN ${process.env.DB_SCHEMA}.Imagem I ON LI.ImagemID = I.ad_imagem_id
+            ${categoryId ? `INNER JOIN ${process.env.DB_SCHEMA}.LivroCategorias LC ON L.ad_livros_id = LC.LivroID` : ''}
+            WHERE L.ativo = 'Y' AND i.is_default = TRUE
+            ${categoryId ? 'AND LC.CategoriaID = $3' : ''}
+            LIMIT $1 OFFSET $2;
+        `;
+
+        const params = [limit, offset];
+        if (categoryId) {
+            params.push(categoryId);
+        }
+
+        const result = await pool.query(query, params);
         return result.rows;
     } catch (error) {
         console.error('Error fetching books:', error);
@@ -68,7 +81,7 @@ const deleteBookById = async (id) => {
 // Função para buscar um livro pelo ISBN10 ou ISBN13 no banco de dados
 const getBookByISBN = async (isbn) => {
     try {
-        const query = `SELECT * FROM Livros WHERE ISBN10 = $1 OR ISBN13 = $1`;
+        const query = `SELECT * FROM ${process.env.DB_SCHEMA}.Livros WHERE ISBN10 = $1 OR ISBN13 = $1`;
         const result = await pool.query(query, [isbn]);
         return result.rows[0]; // Retorna o livro encontrado ou undefined
     } catch (error) {
@@ -77,4 +90,174 @@ const getBookByISBN = async (isbn) => {
     }
 };
 
-module.exports = { createBook, updateBook, getBookByISBN, findById, findAllBooks, deleteBookById };
+// Destaques
+const getFeaturedBooks = async (limit, offset, categoryId) => {
+    try {
+        let query = `
+            SELECT DISTINCT L.*, 
+                COALESCE(LEITURAS.popularidade, 0) + COALESCE(SALVOS.salvos, 0) AS popularidade,
+                I.URLImagem AS imagem_url, I.ImagemBase64 AS imagem_base64
+            FROM ${process.env.DB_SCHEMA}.Livros L
+            LEFT JOIN (
+                SELECT HL.LivroID, COUNT(HL.LivroID) AS popularidade
+                FROM ${process.env.DB_SCHEMA}.HistoricoLivros HL
+                JOIN ${process.env.DB_SCHEMA}.StatusLivros SL ON HL.StatusID = SL.ad_status_id
+                WHERE SL.nome IN ('Concluído', 'Em andamento')
+                GROUP BY HL.LivroID
+            ) LEITURAS ON L.ad_livros_id = LEITURAS.LivroID
+            LEFT JOIN (
+                SELECT LS.LivroID, COUNT(LS.LivroID) AS salvos
+                FROM ${process.env.DB_SCHEMA}.LivrosSalvos LS
+                GROUP BY LS.LivroID
+            ) SALVOS ON L.ad_livros_id = SALVOS.LivroID
+            LEFT JOIN ${process.env.DB_SCHEMA}.LivroImagens LI ON L.ad_livros_id = LI.LivroID
+            LEFT JOIN ${process.env.DB_SCHEMA}.Imagem I ON LI.ImagemID = I.ad_imagem_id AND I.is_default = TRUE
+            ${categoryId ? `INNER JOIN ${process.env.DB_SCHEMA}.LivroCategorias LC ON L.ad_livros_id = LC.LivroID` : ''}
+            WHERE L.ativo = 'Y' AND I.is_default = TRUE
+            ${categoryId ? 'AND LC.CategoriaID = $3' : ''}
+            AND (COALESCE(LEITURAS.popularidade, 0) + COALESCE(SALVOS.salvos, 0)) > 0
+            ORDER BY popularidade DESC
+            LIMIT $1 OFFSET $2;
+        `;
+
+        const params = [limit, offset];
+        if (categoryId) {
+            params.push(categoryId);
+        }
+
+        const result = await pool.query(query, params);
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching featured books:', error);
+        throw error;
+    }
+};
+
+// Livros mais bem avaliados
+const getTopRatedBooks = async (limit, offset, categoryId) => {
+    try {
+        const query = `
+            SELECT L.*, AVG(A.pontuacao) AS media_avaliacao, I.URLImagem AS imagem_url, I.ImagemBase64 AS imagem_base64
+            FROM ${process.env.DB_SCHEMA}.Livros L
+            JOIN ${process.env.DB_SCHEMA}.Avaliacoes A ON L.ad_livros_id = A.LivroID
+            LEFT JOIN ${process.env.DB_SCHEMA}.LivroImagens LI ON L.ad_livros_id = LI.LivroID
+            LEFT JOIN ${process.env.DB_SCHEMA}.Imagem I ON LI.ImagemID = I.ad_imagem_id
+            ${categoryId ? `INNER JOIN ${process.env.DB_SCHEMA}.LivroCategorias LC ON L.ad_livros_id = LC.LivroID` : ''}
+            WHERE L.ativo = 'Y' AND A.ativo = 'Y' AND I.is_default = true
+            ${categoryId ? 'AND LC.CategoriaID = $3' : ''}
+            GROUP BY L.ad_livros_id, I.ad_imagem_id
+            ORDER BY media_avaliacao DESC
+            LIMIT $1 OFFSET $2;
+        `;
+        const queryParams = [limit, offset];
+        if (categoryId) {
+            queryParams.push(categoryId);
+        }
+
+        const result = await pool.query(query, queryParams);
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching top-rated books:', error);
+        throw error;
+    }
+};
+
+// Recomendado para você
+const getRecommendedBooks = async (userId, limit, offset, categoryId) => {
+    try {
+        const query = `
+            SELECT L.*, I.URLImagem AS imagem_url, I.ImagemBase64 AS imagem_base64
+            FROM ${process.env.DB_SCHEMA}.Livros L
+            JOIN ${process.env.DB_SCHEMA}.LivroCategorias LC ON L.ad_livros_id = LC.LivroID
+            LEFT JOIN ${process.env.DB_SCHEMA}.LivroImagens LI ON L.ad_livros_id = LI.LivroID
+            LEFT JOIN ${process.env.DB_SCHEMA}.Imagem I ON LI.ImagemID = I.ad_imagem_id
+            WHERE LC.CategoriaID IN (
+                SELECT DISTINCT LC2.CategoriaID
+                FROM ${process.env.DB_SCHEMA}.HistoricoLivros HL
+                JOIN ${process.env.DB_SCHEMA}.LivroCategorias LC2 ON HL.LivroID = LC2.LivroID
+                WHERE HL.UsuarioID = $1
+            ) 
+            AND NOT EXISTS (
+                SELECT 1
+                FROM ${process.env.DB_SCHEMA}.HistoricoLivros HL2
+                WHERE HL2.LivroID = L.ad_livros_id AND HL2.UsuarioID = $1
+            ) 
+            AND L.ativo = 'Y' 
+            AND I.is_default = TRUE
+            ${categoryId ? 'AND LC.CategoriaID = $4' : ''}
+            GROUP BY L.ad_livros_id, I.URLImagem, I.imagembase64
+            LIMIT $2 OFFSET $3;
+        `;
+
+        const values = [userId, limit, offset];
+        if (categoryId) {
+            values.push(categoryId);
+        }
+
+        const result = await pool.query(query, values);
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching recommended books:', error);
+        throw error;
+    }
+};
+
+// Descobertas da semana
+const getNewArrivals = async (limit, offset, categoryId) => {
+    try {
+        const query = `
+            SELECT L.*, I.URLImagem AS imagem_url, I.ImagemBase64 AS imagem_base64
+            FROM ${process.env.DB_SCHEMA}.Livros L
+            LEFT JOIN ${process.env.DB_SCHEMA}.LivroImagens LI ON L.ad_livros_id = LI.LivroID
+            LEFT JOIN ${process.env.DB_SCHEMA}.Imagem I ON LI.ImagemID = I.ad_imagem_id
+            ${categoryId ? `INNER JOIN ${process.env.DB_SCHEMA}.LivroCategorias LC ON L.ad_livros_id = LC.LivroID` : ''}
+            WHERE L.ativo = 'Y' AND I.is_default = TRUE
+            ${categoryId ? 'AND LC.CategoriaID = $3' : ''}
+            ORDER BY L.criado DESC
+            LIMIT $1 OFFSET $2;
+        `;
+
+        const queryParams = [limit, offset];
+        if (categoryId) {
+            queryParams.push(categoryId);
+        }
+
+        const result = await pool.query(query, queryParams);
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching new arrivals:', error);
+        throw error;
+    }
+};
+
+// Buscar as imagens de livro pelo ID
+const findBookImageById = async (id) => {
+    try {
+        const query = `
+            SELECT 
+                l.ad_livros_id AS livro_id,
+                i.ad_imagem_id AS imagem_id,
+                i.nome AS imagem_nome,
+                i.URLImagem AS imagem_url,
+                i.ImagemBase64 AS imagem_base64
+            FROM 
+                ${process.env.DB_SCHEMA}.Livros l
+            LEFT JOIN 
+                ${process.env.DB_SCHEMA}.LivroImagens li ON l.ad_livros_id = li.LivroID
+            LEFT JOIN 
+                ${process.env.DB_SCHEMA}.Imagem i ON li.ImagemID = i.ad_imagem_id
+            WHERE 
+                l.ad_livros_id = $1
+                AND l.ativo = 'Y' 
+                AND li.ativo = 'Y'
+                AND i.ativo = 'Y';
+        `;
+        const result = await pool.query(query, [id]);
+        return result.rows;
+    } catch (error) {
+        console.error('Error ao buscar as imagens do livro:', error);
+        throw error;
+    }
+};
+
+module.exports = { createBook, updateBook, getBookByISBN, findById, findAllBooks, deleteBookById, getFeaturedBooks, getTopRatedBooks, getRecommendedBooks, getNewArrivals, findBookImageById };

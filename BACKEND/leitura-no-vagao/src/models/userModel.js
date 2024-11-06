@@ -38,6 +38,7 @@ const findById = async (id) => {
 
 // Função para criar um novo usuário
 const createUser = async (user) => {
+    console.log(`Entrou na model para cadastrar o usuario`)
     try {
         const result = await pool.query(
             `INSERT INTO ${process.env.DB_SCHEMA}.usuarios(nome, email, telefone, senha, idauthgoogle) VALUES ($1, $2, $3, $4, $5) RETURNING *`,

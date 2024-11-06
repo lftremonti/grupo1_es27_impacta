@@ -5,6 +5,7 @@ const ApiError = require('../utils/ApiError');
 const { successResponse } = require('../utils/ApiResponse');
 
 const create = async (req, res, next) => {
+    console.log("API de Criar usuarios.")
     try {
         const { nome, email, telefone, senha, idAuthGoogle } = req.body;
 
@@ -40,6 +41,7 @@ const create = async (req, res, next) => {
         
         return successResponse(res, 201, 'Usuario criado com sucesso!');
     } catch (err) {
+        console.error(`Error: ${err}`)
         next(new ApiError(500, 'Server error', err.message));
     }
 };

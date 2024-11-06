@@ -3,7 +3,9 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ActivityIndicator
+  ActivityIndicator,
+  TouchableWithoutFeedback,
+  Keyboard
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -99,36 +101,38 @@ export function CodeValidationScreen() {
         message={dialogMessage}
         type={dialogType}
       />
-      <View style={styles.container}>
-        <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()}>
-          <Text style={styles.welcome}>Código Enviado!</Text>
-          <Text style={styles.instructions}>Verifique seu email e insira o código de 6 dígitos que enviamos.</Text>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()}>
+            <Text style={styles.welcome}>Código Enviado!</Text>
+            <Text style={styles.instructions}>Verifique seu email e insira o código de 6 dígitos que enviamos.</Text>
 
-          <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
-            <CodeInput
-              value={code}
-              onChange={setCode}
-              hasError={errors.code} // Passa o estado de erro
-            />
-          </Animated.View>
+            <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
+              <CodeInput
+                value={code}
+                onChange={setCode}
+                hasError={errors.code} // Passa o estado de erro
+              />
+            </Animated.View>
 
-          <Animated.View entering={FadeInDown.delay(650).duration(5000).springify()}>
-            {isLoading ? (
-              <TouchableOpacity style={styles.button}>
-                <ActivityIndicator size="large" color="#FFFFFF" />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                <Text style={styles.buttonText}>Prosseguir</Text>
-              </TouchableOpacity>
-            )}
-          </Animated.View>
+            <Animated.View entering={FadeInDown.delay(650).duration(5000).springify()}>
+              {isLoading ? (
+                <TouchableOpacity style={styles.button}>
+                  <ActivityIndicator size="large" color="#FFFFFF" />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+                  <Text style={styles.buttonText}>Prosseguir</Text>
+                </TouchableOpacity>
+              )}
+            </Animated.View>
 
-          <Animated.View entering={FadeInDown.delay(850).duration(5000).springify()}>
-            <ProgressBar progress={progress} duration={1000} />
+            <Animated.View entering={FadeInDown.delay(850).duration(5000).springify()}>
+              <ProgressBar progress={progress} duration={1000} />
+            </Animated.View>
           </Animated.View>
-        </Animated.View>
-      </View>
+        </View>
+      </TouchableWithoutFeedback>
     </PaperProvider>
   );
 }

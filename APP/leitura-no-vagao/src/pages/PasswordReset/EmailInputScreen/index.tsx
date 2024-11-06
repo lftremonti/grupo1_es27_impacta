@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
@@ -93,44 +93,46 @@ export function EmailInputScreen() {
         message={dialogMessage}
         type={dialogType}
       />
-      <View style={styles.container}>
-        <TouchableOpacity onPress={() => navigation.navigate('SignIn' as never)} style={styles.backButton}>
-          <Icon name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
-        </TouchableOpacity>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          <TouchableOpacity onPress={() => navigation.navigate('SignIn' as never)} style={styles.backButton}>
+            <Icon name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
+          </TouchableOpacity>
 
-        <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()}>
-          <Text style={styles.welcome}>Vamos redefinir sua senha!</Text>
-          <Text style={styles.instructions}>Digite seu email para continuar.</Text>
+          <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()}>
+            <Text style={styles.welcome}>Vamos redefinir sua senha!</Text>
+            <Text style={styles.instructions}>Digite seu email para continuar.</Text>
 
-          <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={[styles.input, errors.email && { borderColor: 'red', borderWidth: 1 }]}
-              placeholder="Insira seu email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+            <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={[styles.input, errors.email && { borderColor: 'red', borderWidth: 1 }]}
+                placeholder="Insira seu email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.delay(650).duration(5000).springify()}>
+              {isLoading ? (
+                <TouchableOpacity style={styles.button}>
+                  <ActivityIndicator size="large" color="#FFFFFF" />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+                  <Text style={styles.buttonText}>Enviar</Text>
+                </TouchableOpacity>
+              )}
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.delay(850).duration(5000).springify()}>
+              <ProgressBar progress={progress} duration={1000} />
+            </Animated.View>
           </Animated.View>
-
-          <Animated.View entering={FadeInDown.delay(650).duration(5000).springify()}>
-            {isLoading ? (
-              <TouchableOpacity style={styles.button}>
-                <ActivityIndicator size="large" color="#FFFFFF" />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                <Text style={styles.buttonText}>Enviar</Text>
-              </TouchableOpacity>
-            )}
-          </Animated.View>
-
-          <Animated.View entering={FadeInDown.delay(850).duration(5000).springify()}>
-            <ProgressBar progress={progress} duration={1000} />
-          </Animated.View>
-        </Animated.View>
-      </View>
+        </View>
+      </TouchableWithoutFeedback>
     </PaperProvider>
   );
 }

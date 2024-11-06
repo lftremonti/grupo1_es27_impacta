@@ -1,6 +1,7 @@
-const bookModel = require('../models/bookModel'); // Modelo para consultar o banco de dados
+const bookModel = require('../models/bookModel');
+const reviewsModel = require('../models/reviewsModel');
 const { validarCamposObrigatorios } = require('../utils/validationUtils');
-const { getAllBooksoogleApiBook } = require('../models/externalApi'); // Modelo para a API externa
+const { getAllBooksoogleApiBook } = require('../models/externalApi');
 const ApiError = require('../utils/ApiError');
 const { successResponse } = require('../utils/ApiResponse');
 
@@ -50,15 +51,22 @@ const getBookById = async (req, res, next) => {
             return next(new ApiError(404, 'Livro não encontrado'));
         }
 
-        return successResponse(res, 200, 'Livro encontrado!', { book });
+        const bookImage = await bookModel.findBookImageById(id);
+
+        const reviewsBook = await reviewsModel.findReviewsByIdBook(id);
+
+        const averageBook = await reviewsModel.findReviewsAverageByIdBook(id);
+        
+        return successResponse(res, 200, 'Livro encontrado!', { book, bookImage, reviewsBook, averageBook });
     } catch (err) {
         next(new ApiError(500, 'Erro ao buscar o livro', err.message));
     }
 };
 
 const getAllBooks = async (req, res, next) => {
+    const { limit = 8, offset = 0, categoryId} = req.query;
     try {
-        const books = await bookModel.findAllBooks();
+        const books = await bookModel.findAllBooks(parseInt(limit), parseInt(offset), parseInt(categoryId));
         return successResponse(res, 200, 'Livros encontrados!', { books });
     } catch (err) {
         next(new ApiError(500, 'Erro ao buscar os livros', err.message));
@@ -96,7 +104,6 @@ const getBookByIsbn = async (req, res, next) => {
     }
 };
 
-
 const getBookByIsbnCreate = async (req, res, next) => {
     const { isbn } = req.params;
 
@@ -131,4 +138,49 @@ const getBookByIsbnCreate = async (req, res, next) => {
     }
 };
 
-module.exports = { createBook, updateBook, getBookById, getBookByIsbn, getAllBooks, deleteBookById };
+const getFeaturedBooks = async (req, res, next) => { 
+    const { limit = 8, offset = 0, categoryId } = req.query;
+    try {
+        const books = await bookModel.getFeaturedBooks(parseInt(limit), parseInt(offset), parseInt(categoryId));
+        return successResponse(res, 200, 'Livros encontrados!', { books });
+    } catch (err) {
+        next(new ApiError(500, 'Erro ao buscar os livros', err.message));
+    }
+};
+
+const getTopRatedBooks = async (req, res, next) => {
+    const { limit = 8, offset = 0, categoryId } = req.query;
+    try {
+        const books = await bookModel.getTopRatedBooks(parseInt(limit), parseInt(offset), parseInt(categoryId));
+        return successResponse(res, 200, 'Livros encontrados!', { books });
+    } catch (err) {
+        next(new ApiError(500, 'Erro ao buscar os livros', err.message));
+    }
+};
+
+const getRecommendedBooks  = async (req, res, next) => {
+    const { id } = req.params;
+    const { limit = 8, offset = 0, categoryId } = req.query;
+    try {
+        const books = await bookModel.getRecommendedBooks(id, parseInt(limit), parseInt(offset), parseInt(categoryId));
+        if (!books) {
+            return next(new ApiError(404, 'Livro não encontrado'));
+        }
+
+        return successResponse(res, 200, 'Livro encontrado!', { books });
+    } catch (err) {
+        next(new ApiError(500, 'Erro ao buscar o livro', err.message));
+    }
+};
+
+const getNewArrivals = async (req, res, next) => {
+    const { limit = 8, offset = 0, categoryId } = req.query;
+    try {
+        const books = await bookModel.getNewArrivals(parseInt(limit), parseInt(offset), parseInt(categoryId));
+        return successResponse(res, 200, 'Livros encontrados!', { books });
+    } catch (err) {
+        next(new ApiError(500, 'Erro ao buscar os livros', err.message));
+    }
+};
+
+module.exports = { createBook, updateBook, getBookById, getBookByIsbn, getAllBooks, deleteBookById, getFeaturedBooks, getTopRatedBooks, getRecommendedBooks, getNewArrivals };
