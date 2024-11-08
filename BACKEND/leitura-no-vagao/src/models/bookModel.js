@@ -260,4 +260,44 @@ const findBookImageById = async (id) => {
     }
 };
 
+// Buscar todos os livros
+const findFavoriteBooks = async (limit, offset, categoryId) => {
+    try {
+        const query = `
+            SELECT L.*, I.URLImagem AS imagem_url, I.ImagemBase64 AS imagem_base64
+            FROM ${process.env.DB_SCHEMA}.Livros L
+            LEFT JOIN ${process.env.DB_SCHEMA}.LivroImagens LI ON L.ad_livros_id = LI.LivroID
+            LEFT JOIN ${process.env.DB_SCHEMA}.Imagem I ON LI.ImagemID = I.ad_imagem_id
+            ${categoryId ? `INNER JOIN ${process.env.DB_SCHEMA}.LivroCategorias LC ON L.ad_livros_id = LC.LivroID` : ''}
+            WHERE L.ativo = 'Y' AND i.is_default = TRUE
+            ${categoryId ? 'AND LC.CategoriaID = $3' : ''}
+            LIMIT $1 OFFSET $2;
+        `;
+
+        const params = [limit, offset];
+        if (categoryId) {
+            params.push(categoryId);
+        }
+
+        const result = await pool.query(query, params);
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching books:', error);
+        throw error;
+    }
+};
+
+/*
+SELECT L.*, I.URLImagem AS imagem_url, I.ImagemBase64 AS imagem_base64
+FROM livrossalvos l2 
+LEFT JOIN Livros L ON l2.livroid = l.ad_livros_id 
+LEFT JOIN LivroImagens LI ON L.ad_livros_id = LI.LivroID
+LEFT JOIN Imagem I ON LI.ImagemID = I.ad_imagem_id
+WHERE L.ativo = 'Y' AND i.is_default = TRUE
+LIMIT $1 OFFSET $2;
+
+
+
+*/
+
 module.exports = { createBook, updateBook, getBookByISBN, findById, findAllBooks, deleteBookById, getFeaturedBooks, getTopRatedBooks, getRecommendedBooks, getNewArrivals, findBookImageById };
