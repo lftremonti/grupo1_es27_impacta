@@ -168,3 +168,29 @@ export async function getNewArrivals(limit: number, offset: number, categoryId?:
     throw new Error('Error ao buscar os livros no banco de dados');
   }
 }
+
+//Livros adicionados como favoritos pelo usuario
+export async function getFavoriteBookService(limit: number, offset: number, userId: number) {
+  try {
+    const token = await SecureStorage.getItemAsync('userToken');
+    
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token || process.env.BYPASS_TOKEN_KEY}`,
+    };
+
+    // Adiciona o filtro de categoria se estiver selecionado
+    const url = `${config.BASE_URL}/api/books/?limit=${limit}&offset=${offset}`;
+
+    const response = await fetch(url, { method: 'GET', headers });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.log(`Error ao buscar os livros no banco: ${config.BASE_URL}`, error);
+    throw new Error('Error ao buscar os livros no banco de dados');
+  }
+}
