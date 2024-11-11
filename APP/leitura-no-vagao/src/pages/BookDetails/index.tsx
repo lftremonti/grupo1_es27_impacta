@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, FlatList, TouchableOpacity, ScrollView, Dimensions, Modal, TextInput, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Provider } from 'react-native-paper';
+import { Button, Paragraph, Portal, Provider, Title } from 'react-native-paper';
 import { styles } from './styles';
 import { Ionicons } from '@expo/vector-icons';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -17,6 +17,8 @@ import { ActivityIndicator, Provider as PaperProvider } from 'react-native-paper
 import CustomDialog from '../../components/CustomDialog';
 import { ReviewsBook } from '../../types/ReviewsBook';
 import * as SecureStore from 'expo-secure-store';
+import Animated, { FadeInDown, SlideInUp, SlideOutDown } from 'react-native-reanimated';
+import LottieView from 'lottie-react-native';
 
 type BookDetailsProps = {
   route: RouteProp<RootStackParamList, 'BookDetails'>;
@@ -32,9 +34,12 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
   const [currentIndex, setCurrentIndex] = useState(0); // Estado para o índice atual da imagem
   const flatListRef = useRef<FlatList<Book>>(null); // Referência para o FlatList
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
+  const [isBookFavoriteModalVisible, setIsBookFavoriteModalVisible] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [userRating, setUserRating] = useState(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isAdded, setIsAdded] = useState(false);
+  const [isAnimationVisible, setAnimationVisible] = useState(true);
 
   const [errors, setErrors] = useState({ commentText: false });
 
@@ -76,12 +81,29 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
   //Abre o modal dos comentarios
   const openCommentModal = () => setIsCommentModalVisible(true);
 
+  //Abre o modal dos livros favoritos
+  const openBookFavoriteModal = () => {
+    if (isAnimationVisible) {
+      const timer = setTimeout(() => {
+        setAnimationVisible(false);
+        setIsBookFavoriteModalVisible(true); // Mostra o modal após a animação
+      }, 1500); // Tempo da animação (1.5 segundos)
+
+      return () => clearTimeout(timer); // Limpa o temporizador ao desmontar
+    }
+  }
+
   //Fecha o modal dos comentarios
   const closeCommentModal = () => {
     setIsCommentModalVisible(false);
     setCommentText("");
     setUserRating(0);
     setErrors({ commentText: false });
+  };
+
+  //Fecha o modal dos livros favoritos
+  const closeBookFavoriteModal = () => {
+    setIsBookFavoriteModalVisible(false);
   };
 
   const fetchBookById = async () => {
@@ -307,8 +329,8 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
                 {isDescriptionExpanded ? 'Ver menos' : 'Ver mais'}
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.readButton}>
-              <Text style={styles.readButtonText}>Adicionar nos favoritos</Text>
+            <TouchableOpacity style={styles.readButton} onPress={openBookFavoriteModal}>
+              <Text style={styles.readButtonText}>Adicionar aos favoritos</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.readButton}>
               <Text style={styles.readButtonText}>Quero ler</Text>
@@ -347,11 +369,13 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
           </View>
         </ScrollView>
 
+        {/** Modal para avaliação do livro */}
         <Modal
           transparent
           visible={isCommentModalVisible}
           animationType="slide"
           onRequestClose={closeCommentModal}
+          onDismiss={closeCommentModal}
         >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.modalOverlay}>
@@ -390,6 +414,37 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
           </View>
           </TouchableWithoutFeedback>
         </Modal>
+
+        {isAnimationVisible && (
+          <LottieView
+            source={require('../../assets/AnimationHeart.json')} // ajuste o caminho conforme necessário
+            autoPlay
+            loop={false} // Configura para tocar apenas uma vez
+            style={styles.animation}
+          />
+        )}
+
+        {/**Modal para exibir livros favoritos*/}
+        <Modal 
+          transparent
+          animationType="slide" 
+          visible={isBookFavoriteModalVisible} 
+          onDismiss={closeBookFavoriteModal} 
+          style={styles.modalBookFavoriteContainer}
+        >
+          
+          <TouchableWithoutFeedback onPress={closeBookFavoriteModal}>
+            <View style={styles.modalBookFavoriteOverlay} />
+          </TouchableWithoutFeedback>
+          <View style={styles.dialog}>
+            <Title style={styles.BookFavoritetitle}>Seus livros favoritos</Title>
+            <Paragraph style={styles.message}>Menssagem de teste</Paragraph>
+            <Button mode="contained" onPress={closeBookFavoriteModal} style={[styles.button, { backgroundColor: '#FFA500' }]}>
+              <Text style={styles.buttonText}>Fechar</Text>
+            </Button>
+          </View>
+        </Modal>
+
       </GestureHandlerRootView>
     </Provider>
   );

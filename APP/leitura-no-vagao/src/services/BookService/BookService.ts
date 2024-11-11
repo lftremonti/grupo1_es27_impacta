@@ -169,8 +169,8 @@ export async function getNewArrivals(limit: number, offset: number, categoryId?:
   }
 }
 
-//Livros adicionados como favoritos pelo usuario
-export async function getFavoriteBookService(limit: number, offset: number, userId: number) {
+//BuscaLivros adicionados como favoritos pelo usuario
+export async function getFavoriteBookService(limit: number, offset: number, id: number) {
   try {
     const token = await SecureStorage.getItemAsync('userToken');
     
@@ -179,9 +179,8 @@ export async function getFavoriteBookService(limit: number, offset: number, user
       'Authorization': `Bearer ${token || process.env.BYPASS_TOKEN_KEY}`,
     };
 
-    // Adiciona o filtro de categoria se estiver selecionado
-    const url = `${config.BASE_URL}/api/books/?limit=${limit}&offset=${offset}`;
-
+    let url = `${config.BASE_URL}/api/books/favoriteBooks/${id}?limit=${limit}&offset=${offset}`;
+    
     const response = await fetch(url, { method: 'GET', headers });
 
     if (!response.ok) {
@@ -190,7 +189,7 @@ export async function getFavoriteBookService(limit: number, offset: number, user
 
     return await response.json();
   } catch (error) {
-    console.log(`Error ao buscar os livros no banco: ${config.BASE_URL}`, error);
-    throw new Error('Error ao buscar os livros no banco de dados');
+    console.log(`Error ao buscar os livros favoritos no banco: ${config.BASE_URL}`, error);
+    throw new Error('Error ao buscar os livros favoritos no banco de dados');
   }
 }

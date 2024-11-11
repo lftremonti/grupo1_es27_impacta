@@ -19,17 +19,26 @@ type FavoriteProps = {
 export function Favorite({ route, navigation }: FavoriteProps) {
     const { user } = useUser();
     const [books, setBooks] = useState<Book[]>([]);
+    const [hasMoreBooks, setHasMoreBooks] = useState(false);
 
-    // Função para buscar as avaliações do livro pelo ID
-    const fetchBookFavorite = async (userId: number) => {
+    //Buscar livros recomendados para voce
+    const fetchRecommendedBooks = async (loadMore: boolean = false) => {
+        if (!user) {
+            console.error("User data is null or undefined");
+            return;
+        }
+
         try {
-            const response = await getFavoriteBookService(userId);
-            if (response.status === 200) {
-                // Atualizar o estado com as avaliações recebidas
-                setBooks(response.data.reviews);
-            }
+            const limit = 5;
+            const offset = loadMore ? books.length : 0;
+            
+            const booksData = await getFavoriteBookService(limit, offset, parseInt(user.id));
+            const newBooks = booksData?.data?.books || [];
+            
+            setHasMoreBooks(newBooks.length === limit); // Verifica se há mais livros
+            setBooks((prevBooks) => loadMore ? [...prevBooks, ...newBooks] : newBooks);
         } catch (error) {
-            console.error("Erro ao buscar avaliações:", error);
+            console.error('Error loading books:', error);
         }
     };
 
@@ -61,6 +70,11 @@ export function Favorite({ route, navigation }: FavoriteProps) {
             </TouchableOpacity>
         );
     };
+
+
+    useEffect(() => {
+        fetchRecommendedBooks();
+    }, [user]);
 
     return(
         <GestureHandlerRootView style={{ flex: 1 }}>

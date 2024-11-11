@@ -224,5 +224,50 @@ export const styles = StyleSheet.create({
         textShadowColor: '#FFD700', // gold color border
         textShadowOffset: { width: 1, height: 1 },
         textShadowRadius: 2,
-    }
+    },
+    modalBookFavoriteContainer: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        margin: 0,
+      },
+      modalBookFavoriteOverlay: {
+        flex: 1,
+      },
+      dialog: {
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+      },
+      iconContainer: {
+        alignItems: 'center',
+        marginBottom: 10,
+      },
+      BookFavoritetitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 10,
+        color: '#030202'
+      },
+      message: {
+        fontSize: 16,
+        textAlign: 'center',
+        marginBottom: 20,
+        color: '#030202'
+      },
+      button: {
+        marginTop: 10,
+      },
+      buttonText: {
+        color: 'white',
+      },
+      animation: {
+        width: 150,
+        height: 150,
+      },
 });
