@@ -195,7 +195,8 @@ const getNewArrivals = async (req, res, next) => {
 
 // Livros favoritos usuario logado
 const findFavoriteBooks = async (req, res, next) => {
-    const { limit = 8, offset = 0, id } = req.query;
+    const { id } = req.params;
+    const { limit = 8, offset = 0} = req.query;
     try {
         const books = await bookModel.findFavoriteBooks(parseInt(limit), parseInt(offset), parseInt(id));
         return successResponse(res, 200, 'Livros encontrados!', { books });

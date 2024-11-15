@@ -261,21 +261,21 @@ const findBookImageById = async (id) => {
 };
 
 // Livros favoritos usuario logado
-const findFavoriteBooks = async (limit, offset, userID) => {
+const findFavoriteBooks = async (limit, offset, id) => {
     try {
         const query = `
             SELECT L.*, I.URLImagem AS imagem_url, I.ImagemBase64 AS imagem_base64
-            FROM ${process.env.DB_SCHEMA}.LivrosSalvos L
-            LEFT JOIN ${process.env.DB_SCHEMA}.Livros L2 ON L.livroid = L2.ad_livros_id 
+            FROM ${process.env.DB_SCHEMA}.LivrosSalvos L2
+            LEFT JOIN ${process.env.DB_SCHEMA}.Livros L ON L2.livroid = L.ad_livros_id 
             LEFT JOIN ${process.env.DB_SCHEMA}.LivroImagens LI ON L.ad_livros_id = LI.LivroID
             LEFT JOIN ${process.env.DB_SCHEMA}.Imagem I ON LI.ImagemID = I.ad_imagem_id
-            WHERE L.ativo = 'Y' AND i.is_default = TRUE AND L.usuarioid = $3
+            WHERE L.ativo = 'Y' AND i.is_default = TRUE AND L2.usuarioid = $3
             LIMIT $1 OFFSET $2;
         `;
 
         const params = [limit, offset];
-        if (userID) {
-            params.push(userID);
+        if (id) {
+            params.push(id);
         }
 
         const result = await pool.query(query, params);
