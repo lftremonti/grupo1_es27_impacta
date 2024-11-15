@@ -229,11 +229,11 @@ export const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-end',
         margin: 0,
-      },
-      modalBookFavoriteOverlay: {
+    },
+    modalBookFavoriteOverlay: {
         flex: 1,
-      },
-      dialog: {
+    },
+    dialog: {
         backgroundColor: 'white',
         padding: 20,
         borderRadius: 20,
@@ -242,32 +242,49 @@ export const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
-      },
-      iconContainer: {
+    },
+    iconContainer: {
         alignItems: 'center',
         marginBottom: 10,
-      },
-      BookFavoritetitle: {
+    },
+    BookFavoritetitle: {
         fontSize: 20,
         fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: 10,
         color: '#030202'
-      },
-      message: {
+    },
+    message: {
         fontSize: 16,
         textAlign: 'center',
         marginBottom: 20,
         color: '#030202'
-      },
-      button: {
+    },
+    button: {
         marginTop: 10,
-      },
-      buttonText: {
+    },
+    buttonText: {
         color: 'white',
-      },
-      animation: {
-        width: 150,
-        height: 150,
-      },
+    },
+    animation: {
+        position: 'absolute',
+        top: '15%',  // Alinha a animação verticalmente ao centro
+        left: '19%', // Alinha a animação horizontalmente ao centro
+        transform: [{ translateX: -50 }, { translateY: -50 }], // Centraliza totalment
+        width: 350, // Ajuste conforme o tamanho desejado
+        height: 350, // Ajuste conforme o tamanho desejado
+        backgroundColor: 'transparent', // Remove o fundo
+        zIndex: 10, // Garante que a animação esteja acima de outros componentes
+    },
+    subContainerModalBook: {
+        borderBottomWidth: 1, 
+        borderBottomColor: '#ccc', 
+        paddingBottom: 0, 
+        marginBottom: 5,
+        flexDirection: 'row',
+    },
+    imageModalBook:{
+        width: 55,
+        height: 55   
+    }
 });

@@ -4,12 +4,15 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { styles } from './styles';
 import { Book } from '../../types/Book';
 import { useUser } from '@clerk/clerk-expo';
-import { DrawerActions, RouteProp } from '@react-navigation/native';
+import { DrawerActions, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList } from '../../routes/app.routes';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Lottie from 'lottie-react-native';
 import { getFavoriteBookService } from '../../services/BookService/BookService';
+import * as SecureStore from 'expo-secure-store';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Button } from 'react-native-paper';
 
 type FavoriteProps = {
     route: RouteProp<RootStackParamList, 'Favorite'>;
@@ -20,19 +23,47 @@ export function Favorite({ route, navigation }: FavoriteProps) {
     const { user } = useUser();
     const [books, setBooks] = useState<Book[]>([]);
     const [hasMoreBooks, setHasMoreBooks] = useState(false);
+    const [menuVisible, setMenuVisible] = useState(false); // Estado para controlar o menu de opções
+
+
+    //getUserId para retornar o ID do usuário
+    const getUserId = async (): Promise<number | null> => {
+        const storedUserData = await SecureStore.getItemAsync('userData');
+        
+        if (storedUserData) {
+            const parsedData = JSON.parse(storedUserData);
+            return parsedData.id;
+        }
+
+        console.warn("No user data found in secure storage");
+        return null;
+    };
+
+    // Função para remover o livro da lista de favoritos
+    const removeBookFromFavorites = async (bookId: number) => {
+        try {
+            //await removeFavoriteBookService(bookId, parseInt(user.id));
+            setBooks(prevBooks => prevBooks.filter(book => book.ad_livros_id !== bookId));
+            console.log('Livro removido dos favoritos');
+        } catch (error) {
+            console.error('Erro ao remover o livro dos favoritos:', error);
+        }
+    };
 
     //Buscar livros recomendados para voce
     const fetchRecommendedBooks = async (loadMore: boolean = false) => {
-        if (!user) {
-            console.error("User data is null or undefined");
+
+        const usuarioId = await getUserId();
+
+        if (usuarioId === null) {
+            alert("Erro ao recuperar o ID do usuário. Tente novamente.");
             return;
         }
 
         try {
             const limit = 5;
             const offset = loadMore ? books.length : 0;
-            
-            const booksData = await getFavoriteBookService(limit, offset, parseInt(user.id));
+            const booksData = await getFavoriteBookService(limit, offset, usuarioId);
             const newBooks = booksData?.data?.books || [];
             
             setHasMoreBooks(newBooks.length === limit); // Verifica se há mais livros
@@ -59,22 +90,61 @@ export function Favorite({ route, navigation }: FavoriteProps) {
         return (
             <TouchableOpacity onPress={() => navigation.navigate('BookDetails', { book: item })}>
                 <View style={styles.bookSearchContainer}>
-                {imageSource && (
-                    <Image source={imageSource} style={styles.bookCover} />
-                )}
-                <View style={styles.bookSearchInfo}>
-                    <Text style={styles.bookSearchTitle}>{item.titulo}</Text>
-                    <Text style={styles.bookSearchAuthor}>{item.autor}</Text>
-                </View>
+                    {imageSource && (
+                        <Image source={imageSource} style={styles.bookCover} />
+                    )}
+                    <View style={styles.bookSearchInfo}>
+                        <Text style={styles.bookSearchTitle}>{item.titulo}</Text>
+                        <Text style={styles.bookSearchAuthor}>{item.autor}</Text>
+                        <View style={{flexDirection: 'row'}}>
+                            <Button mode="contained" onPress={()=>{}} style={styles.button}>
+                                <Text style={styles.buttonText}>Quero Ler</Text>
+                            </Button>
+                            <TouchableOpacity
+                                style={styles.menuButton}
+                                onPress={() => setMenuVisible(!menuVisible)}
+                            >
+                                <Icon name="ellipsis-horizontal" size={20} color="black" />
+                            </TouchableOpacity>
+                            {menuVisible && (
+                                <View style={styles.menuOptions}>
+                                    <TouchableOpacity onPress={() => removeBookFromFavorites(item.ad_livros_id)}>
+                                        <Text style={styles.menuOptionText}>Remover dos favoritos</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                        </View>
+                    </View>
                 </View>
             </TouchableOpacity>
         );
     };
 
-
     useEffect(() => {
-        fetchRecommendedBooks();
+        const loadBooks = async () => {
+            await fetchRecommendedBooks();
+        };
+        loadBooks();
     }, [user]);
+
+    useFocusEffect(
+        React.useCallback(() => {
+          // Limpa o estado quando a tela perde o foco
+          return () => {
+            setBooks([]);
+          };
+        }, [])
+    );
+    
+    useFocusEffect(
+        React.useCallback(() => {
+            // Carrega os dados quando a tela ganha o foco
+            const loadBooks = async () => {
+                await fetchRecommendedBooks();
+            };
+            loadBooks();
+        }, [])
+    );
 
     return(
         <GestureHandlerRootView style={{ flex: 1 }}>
@@ -88,12 +158,14 @@ export function Favorite({ route, navigation }: FavoriteProps) {
                     <Icon name="list-outline" size={25} style={styles.menuIcon} onPress={openDrawer}/>
                 </View>
                 <Text style={styles.title}>Sua lista de favoritos</Text>
-                {books.length ? (
-                    <FlatList
-                        data={books}
-                        renderItem={renderBookSearch}
-                        keyExtractor={(item, index) => `book-${item.ad_livros_id}-${index}`}
-                    />
+                {books ? (
+                    <View style={{marginTop: 20}}>
+                        <FlatList
+                            data={books}
+                            renderItem={renderBookSearch}
+                            keyExtractor={(item, index) => `book-${item.ad_livros_id}-${index}`}
+                        />
+                    </View>
                 ) : (
                     <View style={styles.subContainer}>
                         <Lottie

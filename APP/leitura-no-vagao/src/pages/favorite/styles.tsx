@@ -79,4 +79,32 @@ export const styles = StyleSheet.create({
     menuIcon: {
         marginLeft: 10,
     },
+    button:{
+        backgroundColor: theme.colors.primary,
+        marginTop: 10
+    },
+    buttonText: {
+        color: 'white',
+    },
+    menuButton: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+    },
+    menuOptions: {
+        position: 'absolute',
+        top: 30,
+        right: 10,
+        backgroundColor: 'white',
+        padding: 10,
+        borderRadius: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.3,
+        shadowRadius: 1,
+    },
+    menuOptionText: {
+        color: 'red',
+        fontWeight: 'bold',
+    },
 })

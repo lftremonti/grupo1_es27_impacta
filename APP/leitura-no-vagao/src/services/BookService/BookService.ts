@@ -169,7 +169,7 @@ export async function getNewArrivals(limit: number, offset: number, categoryId?:
   }
 }
 
-//BuscaLivros adicionados como favoritos pelo usuario
+//Busca Livros adicionados como favoritos pelo usuario
 export async function getFavoriteBookService(limit: number, offset: number, id: number) {
   try {
     const token = await SecureStorage.getItemAsync('userToken');
@@ -187,7 +187,9 @@ export async function getFavoriteBookService(limit: number, offset: number, id: 
       throw new Error(`Error: ${response.statusText}`);
     }
 
-    return await response.json();
+    // Apenas uma chamada para response.json()
+    const responseData = await response.json();
+    return responseData;
   } catch (error) {
     console.log(`Error ao buscar os livros favoritos no banco: ${config.BASE_URL}`, error);
     throw new Error('Error ao buscar os livros favoritos no banco de dados');

@@ -17,7 +17,6 @@ import { ActivityIndicator, Provider as PaperProvider } from 'react-native-paper
 import CustomDialog from '../../components/CustomDialog';
 import { ReviewsBook } from '../../types/ReviewsBook';
 import * as SecureStore from 'expo-secure-store';
-import Animated, { FadeInDown, SlideInUp, SlideOutDown } from 'react-native-reanimated';
 import LottieView from 'lottie-react-native';
 
 type BookDetailsProps = {
@@ -39,7 +38,7 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
   const [userRating, setUserRating] = useState(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isAdded, setIsAdded] = useState(false);
-  const [isAnimationVisible, setAnimationVisible] = useState(true);
+  const [isAnimationVisible, setAnimationVisible] = useState(false);
 
   const [errors, setErrors] = useState({ commentText: false });
 
@@ -83,14 +82,13 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
 
   //Abre o modal dos livros favoritos
   const openBookFavoriteModal = () => {
-    if (isAnimationVisible) {
-      const timer = setTimeout(() => {
-        setAnimationVisible(false);
-        setIsBookFavoriteModalVisible(true); // Mostra o modal após a animação
-      }, 1500); // Tempo da animação (1.5 segundos)
+    setAnimationVisible(true);
+    const timer = setTimeout(() => {
+      setAnimationVisible(false);
+      setIsBookFavoriteModalVisible(true); // Mostra o modal após a animação
+    }, 1500); // Tempo da animação (1.5 segundos)
 
-      return () => clearTimeout(timer); // Limpa o temporizador ao desmontar
-    }
+    return () => clearTimeout(timer); // Limpa o temporizador ao desmontar
   }
 
   //Fecha o modal dos comentarios
@@ -419,7 +417,7 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
           <LottieView
             source={require('../../assets/AnimationHeart.json')} // ajuste o caminho conforme necessário
             autoPlay
-            loop={false} // Configura para tocar apenas uma vez
+            loop={true} // Configura para tocar apenas uma vez
             style={styles.animation}
           />
         )}
@@ -432,13 +430,20 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
           onDismiss={closeBookFavoriteModal} 
           style={styles.modalBookFavoriteContainer}
         >
-          
           <TouchableWithoutFeedback onPress={closeBookFavoriteModal}>
             <View style={styles.modalBookFavoriteOverlay} />
           </TouchableWithoutFeedback>
           <View style={styles.dialog}>
             <Title style={styles.BookFavoritetitle}>Seus livros favoritos</Title>
-            <Paragraph style={styles.message}>Menssagem de teste</Paragraph>
+            <ScrollView>
+              <View style={styles.subContainerModalBook}>
+                <Image style={styles.imageModalBook} source={require('../../assets/ErrorImageBook.png')} />
+                <Text>✅ Adicionado ao favoritos</Text>
+              </View>
+              <View style={{borderBottomWidth: 1, borderBottomColor: '#ccc', paddingBottom: 0, marginBottom: 5}}>
+
+              </View>
+            </ScrollView>
             <Button mode="contained" onPress={closeBookFavoriteModal} style={[styles.button, { backgroundColor: '#FFA500' }]}>
               <Text style={styles.buttonText}>Fechar</Text>
             </Button>
