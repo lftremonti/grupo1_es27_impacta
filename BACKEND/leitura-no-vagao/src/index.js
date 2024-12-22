@@ -6,6 +6,7 @@ dotenv.config();
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const bookRoutes = require('./routes/bookRoutes');
+const favoriteBookRoutes = require('./routes/favoriteBookRoutes');
 const categoryBooksRoutes = require('./routes/categoryBooksRoutes');
 const reviewsBooksRoutes = require('./routes/reviewsRoutes');
 
@@ -22,6 +23,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/books', bookRoutes);
+app.use('/api/favoriteBookRoutes', favoriteBookRoutes);
 app.use('/api/categoryBooks', categoryBooksRoutes);
 app.use('/api/reviews', reviewsBooksRoutes);
 
