@@ -54,6 +54,7 @@ export const styles = StyleSheet.create({
     },
     backArrowColor: {
         color: theme.colors.secondary55,
+        marginTop: 20
     },
     animation: {
         width: 200,
@@ -69,8 +70,8 @@ export const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop: 10,
-        marginBottom: 20
+        marginTop: 5,
+        marginBottom: 5
     },
     headerContent: {
         flex: 1,

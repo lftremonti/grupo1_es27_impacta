@@ -173,6 +173,23 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
     );
   };
 
+  // Renderizar imagem individual
+  const renderImageModal = ({ item, style }: { item: Book; style?: object }) => {
+    const imageSource = item.imagem_url
+      ? { uri: item.imagem_url }
+      : item.imagem_base64
+      ? { uri: `data:image/png;base64,${item.imagem_base64}` }
+      : null;
+  
+    return (
+      <Image
+        source={imageSource ? imageSource : require('../../assets/ErrorImageBook.png')}
+        style={[styles.bookCover, style, { resizeMode: 'contain' }]} // Combina estilos
+      />
+    );
+  };
+  
+
   const navigateToComments = () => {
     navigation.navigate('CommentsBook', {
       reviews: bookReviews, // Passando as avaliações como parâmetro
@@ -434,17 +451,19 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
             <View style={styles.modalBookFavoriteOverlay} />
           </TouchableWithoutFeedback>
           <View style={styles.dialog}>
-            <Title style={styles.BookFavoritetitle}>Seus livros favoritos</Title>
+            <Title style={styles.BookFavoritetitle}>Adicionado aos seus livros favoritos</Title>
             <ScrollView>
               <View style={styles.subContainerModalBook}>
-                <Image style={styles.imageModalBook} source={require('../../assets/ErrorImageBook.png')} />
-                <Text>✅ Adicionado ao favoritos</Text>
+                {renderImageModal({ item: book, style: styles.imageModalBook })}
               </View>
               <View style={{borderBottomWidth: 1, borderBottomColor: '#ccc', paddingBottom: 0, marginBottom: 5}}>
-
+                <Text style={[styles.message, {textAlign: 'center', fontWeight: 'bold'}]}>{book.titulo}</Text>
               </View>
             </ScrollView>
-            <Button mode="contained" onPress={closeBookFavoriteModal} style={[styles.button, { backgroundColor: '#FFA500' }]}>
+            <Button mode="contained" style={[styles.button, { backgroundColor: '#073F72' }]}>
+              <Text style={styles.buttonText}>Sua lista de livros favoritos</Text>
+            </Button>
+            <Button mode="contained" onPress={closeBookFavoriteModal} style={[styles.button, { backgroundColor: '#073F72' }]}>
               <Text style={styles.buttonText}>Fechar</Text>
             </Button>
           </View>

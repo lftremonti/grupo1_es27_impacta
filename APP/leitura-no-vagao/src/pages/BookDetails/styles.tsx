@@ -229,6 +229,11 @@ export const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-end',
         margin: 0,
+        borderTopWidth: 5,
+        borderTopColor: 'black',
+        borderTopLeftRadius: 10, // Bordas arredondadas no canto superior esquerdo
+        borderTopRightRadius: 10, // Bordas arredondadas no canto superior direito
+        overflow: 'hidden', // Para manter o conteúdo dentro das bordas arredondadas
     },
     modalBookFavoriteOverlay: {
         flex: 1,
@@ -281,10 +286,10 @@ export const styles = StyleSheet.create({
         borderBottomColor: '#ccc', 
         paddingBottom: 0, 
         marginBottom: 5,
-        flexDirection: 'row',
     },
     imageModalBook:{
-        width: 55,
-        height: 55   
+        width: 105,
+        height: 155,
+        marginBottom: 10
     }
 });

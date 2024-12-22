@@ -11,7 +11,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Lottie from 'lottie-react-native';
 import { getFavoriteBookService } from '../../services/BookService/BookService';
 import * as SecureStore from 'expo-secure-store';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Button } from 'react-native-paper';
 
 type FavoriteProps = {
@@ -23,8 +22,6 @@ export function Favorite({ route, navigation }: FavoriteProps) {
     const { user } = useUser();
     const [books, setBooks] = useState<Book[]>([]);
     const [hasMoreBooks, setHasMoreBooks] = useState(false);
-    const [menuVisible, setMenuVisible] = useState(false); // Estado para controlar o menu de opções
-
 
     //getUserId para retornar o ID do usuário
     const getUserId = async (): Promise<number | null> => {
@@ -96,23 +93,13 @@ export function Favorite({ route, navigation }: FavoriteProps) {
                     <View style={styles.bookSearchInfo}>
                         <Text style={styles.bookSearchTitle}>{item.titulo}</Text>
                         <Text style={styles.bookSearchAuthor}>{item.autor}</Text>
-                        <View style={{flexDirection: 'row'}}>
-                            <Button mode="contained" onPress={()=>{}} style={styles.button}>
+                        <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+                            <Button mode="contained" onPress={()=>{}} style={[styles.button, { marginRight: 8}]}>
                                 <Text style={styles.buttonText}>Quero Ler</Text>
                             </Button>
-                            <TouchableOpacity
-                                style={styles.menuButton}
-                                onPress={() => setMenuVisible(!menuVisible)}
-                            >
-                                <Icon name="ellipsis-horizontal" size={20} color="black" />
-                            </TouchableOpacity>
-                            {menuVisible && (
-                                <View style={styles.menuOptions}>
-                                    <TouchableOpacity onPress={() => removeBookFromFavorites(item.ad_livros_id)}>
-                                        <Text style={styles.menuOptionText}>Remover dos favoritos</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            )}
+                            <Button mode="contained" onPress={()=>{}} style={styles.button}>
+                                <Text style={styles.buttonText}>Remover</Text>
+                            </Button>
                         </View>
                     </View>
                 </View>
