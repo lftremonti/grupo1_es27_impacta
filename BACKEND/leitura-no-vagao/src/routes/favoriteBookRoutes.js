@@ -4,6 +4,6 @@ const { createFavoriteBook } = require('../controllers/favoriteBookController');
 const { authMiddleware } = require('../middlewares/authMiddleware');
 
 /**Adicionar os livros nos favoritos */
-router.post('/create', authMiddleware, createFavoriteBook);
+router.post('/', authMiddleware, createFavoriteBook);
 
 module.exports = router;
