@@ -18,6 +18,8 @@ import CustomDialog from '../../components/CustomDialog';
 import { ReviewsBook } from '../../types/ReviewsBook';
 import * as SecureStore from 'expo-secure-store';
 import LottieView from 'lottie-react-native';
+import { FavoriteBook } from '../../types/FavoriteBook';
+import { createFavoriteBookService } from '../../services/FavoriteBookService/FavoriteBookService';
 
 type BookDetailsProps = {
   route: RouteProp<RootStackParamList, 'BookDetails'>;
@@ -81,15 +83,30 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
   const openCommentModal = () => setIsCommentModalVisible(true);
 
   //Abre o modal dos livros favoritos
-  const openBookFavoriteModal = () => {
-    setAnimationVisible(true);
-    const timer = setTimeout(() => {
-      setAnimationVisible(false);
-      setIsBookFavoriteModalVisible(true); // Mostra o modal após a animação
-    }, 1500); // Tempo da animação (1.5 segundos)
-
-    return () => clearTimeout(timer); // Limpa o temporizador ao desmontar
-  }
+  const openBookFavoriteModal = async () => {
+    setAnimationVisible(true); // Inicia a animação imediatamente
+  
+    try {
+      const success = await handleAddFavoriteBook(); // Aguarda a API
+  
+      const timer = setTimeout(() => {
+        setAnimationVisible(false);
+        if (success) {
+          setIsBookFavoriteModalVisible(true); // Abre o modal somente em caso de sucesso
+        }
+      }, 1500); // Mantém a animação visível por 1.5 segundos após o retorno da API
+  
+      return () => clearTimeout(timer); // Limpa o temporizador ao desmontar
+    } catch (error) {
+      console.error("Erro ao abrir o modal de favoritos:", error);
+  
+      // Finaliza a animação após o tempo definido, sem abrir o modal
+      const timer = setTimeout(() => {
+        setAnimationVisible(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  };  
 
   //Fecha o modal dos comentarios
   const closeCommentModal = () => {
@@ -276,6 +293,40 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
       closeCommentModal();
       console.error("Erro ao salvar a avaliação:", error);
       showDialog('Erro', "Erro ao salvar a avaliação. Tente novamente.", 'fail');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddFavoriteBook = async (): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+  
+      const usuarioId = await getUserId();
+  
+      if (usuarioId === null) {
+        alert("Erro ao recuperar o ID do usuário. Tente novamente.");
+        return false;
+      }
+  
+      const newFavoriteBook: FavoriteBook = {
+        usuarioId: usuarioId,
+        livroId: book.ad_livros_id,
+      };
+  
+      const response = await createFavoriteBookService(newFavoriteBook);
+  
+      if (response.status === 201 && response.type === "success") {
+        showDialog("Sucesso", "Livro adicionado aos favoritos com sucesso!", "success");
+        return true;
+      } else {
+        showDialog("Erro", "Ocorreu um erro ao adicionar o livro aos favoritos.", "fail");
+        return false;
+      }
+    } catch (error) {
+      console.error("Erro ao adicionar o livro aos favoritos:", error);
+      showDialog("Erro", "Erro ao adicionar o livro aos favoritos. Tente novamente.", "fail");
+      return false;
     } finally {
       setIsLoading(false);
     }
