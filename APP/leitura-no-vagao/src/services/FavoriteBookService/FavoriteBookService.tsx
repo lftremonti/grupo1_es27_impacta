@@ -32,3 +32,32 @@ export async function createFavoriteBookService(favoriteBook: FavoriteBook) {
         throw new Error('Error ao adicionar o livro a sua lista de favoritos');
     }
 }
+
+export async function removeFavoriteBookService(favoriteBook: FavoriteBook) {
+    try {
+        const token = await SecureStorage.getItemAsync('userToken');
+        // Define os headers dinamicamente com base no token
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token || process.env.BYPASS_TOKEN_KEY}`,
+        };
+
+        // Define o corpo da requisição com os dados necessários
+        const body = JSON.stringify(favoriteBook);
+
+        const response = await fetch(`${config.BASE_URL}/api/favoriteBook/`, {
+            method: 'DELETE',
+            headers: headers,
+            body: body,
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+        }
+
+        return true;
+    } catch (error) {
+        console.log(`Erro ao remover o livro da lista de favoritos: ${config.BASE_URL}`, error);
+        throw new Error('Erro ao remover o livro da lista de favoritos');
+    }
+}

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, FlatList, TouchableOpacity, ScrollView, Dimensions, Modal, TextInput, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Button, Paragraph, Portal, Provider, Title } from 'react-native-paper';
+import { Button, Provider, Title } from 'react-native-paper';
 import { styles } from './styles';
 import { Ionicons } from '@expo/vector-icons';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -20,6 +20,7 @@ import * as SecureStore from 'expo-secure-store';
 import LottieView from 'lottie-react-native';
 import { FavoriteBook } from '../../types/FavoriteBook';
 import { createFavoriteBookService } from '../../services/FavoriteBookService/FavoriteBookService';
+import { User } from '../../types/User'; // Importe a interface User
 
 type BookDetailsProps = {
   route: RouteProp<RootStackParamList, 'BookDetails'>;
@@ -39,8 +40,8 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
   const [commentText, setCommentText] = useState("");
   const [userRating, setUserRating] = useState(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isAdded, setIsAdded] = useState(false);
   const [isAnimationVisible, setAnimationVisible] = useState(false);
+  const [userData, setUserData] = useState<User | null>(null);
 
   const [errors, setErrors] = useState({ commentText: false });
 
@@ -133,6 +134,16 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
   };
 
   useEffect(() => {
+    const fetchUserData = async () => {
+      const storedToken = await SecureStore.getItemAsync('userToken');
+      const storedUserData = await SecureStore.getItemAsync('userData');
+      if (storedUserData) {
+        const parsedUserData = JSON.parse(storedUserData);
+        setUserData(parsedUserData);
+      }
+    };
+    
+    fetchUserData();
     fetchBookById();
   }, []);
 
@@ -205,7 +216,6 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
       />
     );
   };
-  
 
   const navigateToComments = () => {
     navigation.navigate('CommentsBook', {
@@ -310,14 +320,13 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
       }
   
       const newFavoriteBook: FavoriteBook = {
-        usuarioId: usuarioId,
-        livroId: book.ad_livros_id,
+        usuarioid: usuarioId,
+        livroid: book.ad_livros_id,
       };
   
       const response = await createFavoriteBookService(newFavoriteBook);
   
       if (response.status === 201 && response.type === "success") {
-        showDialog("Sucesso", "Livro adicionado aos favoritos com sucesso!", "success");
         return true;
       } else {
         showDialog("Erro", "Ocorreu um erro ao adicionar o livro aos favoritos.", "fail");
@@ -511,7 +520,11 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
                 <Text style={[styles.message, {textAlign: 'center', fontWeight: 'bold'}]}>{book.titulo}</Text>
               </View>
             </ScrollView>
-            <Button mode="contained" style={[styles.button, { backgroundColor: '#073F72' }]}>
+            <Button 
+              mode="contained" 
+              onPress={() => navigation.navigate('Favorite', {user: userData!})} 
+              style={[styles.button, { backgroundColor: '#073F72' }]}
+            >
               <Text style={styles.buttonText}>Sua lista de livros favoritos</Text>
             </Button>
             <Button mode="contained" onPress={closeBookFavoriteModal} style={[styles.button, { backgroundColor: '#073F72' }]}>

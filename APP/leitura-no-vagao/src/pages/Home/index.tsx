@@ -391,7 +391,9 @@ export function Home({ navigation }: Props) {
             onPress={() => searchInputRef.current?.focus()}
           >
             <Ionicons name="search" size={20} style={styles.searchIcon} />
-            <TextInput ref={searchInputRef} placeholder="Pesquisar...." 
+            <TextInput 
+              ref={searchInputRef} 
+              placeholder="Pesquisar...." 
               style={styles.searchInput} 
               value={searchQuery}
               onChangeText={(text) => {

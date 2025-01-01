@@ -1,4 +1,4 @@
 export interface FavoriteBook {
-    usuarioId: number;
-    livroId: number;
+    usuarioid: number;
+    livroid: number;
 }

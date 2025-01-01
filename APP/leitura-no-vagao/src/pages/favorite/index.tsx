@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { styles } from './styles';
@@ -12,6 +12,8 @@ import Lottie from 'lottie-react-native';
 import { getFavoriteBookService } from '../../services/BookService/BookService';
 import * as SecureStore from 'expo-secure-store';
 import { Button } from 'react-native-paper';
+import { removeFavoriteBookService } from '../../services/FavoriteBookService/FavoriteBookService';
+import { FavoriteBook } from '../../types/FavoriteBook';
 
 type FavoriteProps = {
     route: RouteProp<RootStackParamList, 'Favorite'>;
@@ -39,7 +41,19 @@ export function Favorite({ route, navigation }: FavoriteProps) {
     // Função para remover o livro da lista de favoritos
     const removeBookFromFavorites = async (bookId: number) => {
         try {
-            //await removeFavoriteBookService(bookId, parseInt(user.id));
+            const usuarioId = await getUserId();
+
+            if (usuarioId === null) {
+                alert("Erro ao recuperar o ID do usuário. Tente novamente.");
+                return;
+            }
+            
+            const newFavoriteBook: FavoriteBook = {
+                usuarioid: usuarioId,
+                livroid: bookId,
+            };
+
+            await removeFavoriteBookService(newFavoriteBook);
             setBooks(prevBooks => prevBooks.filter(book => book.ad_livros_id !== bookId));
             console.log('Livro removido dos favoritos');
         } catch (error) {
@@ -49,7 +63,6 @@ export function Favorite({ route, navigation }: FavoriteProps) {
 
     //Buscar livros recomendados para voce
     const fetchRecommendedBooks = async (loadMore: boolean = false) => {
-
         const usuarioId = await getUserId();
 
         if (usuarioId === null) {
@@ -97,7 +110,7 @@ export function Favorite({ route, navigation }: FavoriteProps) {
                             <Button mode="contained" onPress={()=>{}} style={[styles.button, { marginRight: 8}]}>
                                 <Text style={styles.buttonText}>Quero Ler</Text>
                             </Button>
-                            <Button mode="contained" onPress={()=>{}} style={styles.button}>
+                            <Button mode="contained" onPress={()=>{removeBookFromFavorites(item.ad_livros_id)}} style={styles.button}>
                                 <Text style={styles.buttonText}>Remover</Text>
                             </Button>
                         </View>
@@ -146,11 +159,13 @@ export function Favorite({ route, navigation }: FavoriteProps) {
                 </View>
                 <Text style={styles.title}>Sua lista de favoritos</Text>
                 {books ? (
-                    <View style={{marginTop: 20}}>
+                    <View style={{marginTop: 10, borderRadius: 50}}>
                         <FlatList
                             data={books}
                             renderItem={renderBookSearch}
                             keyExtractor={(item, index) => `book-${item.ad_livros_id}-${index}`}
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={styles.booksList}
                         />
                     </View>
                 ) : (

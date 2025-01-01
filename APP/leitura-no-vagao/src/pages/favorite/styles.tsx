@@ -21,6 +21,7 @@ export const styles = StyleSheet.create({
         borderBottomColor: '#ccc',
         backgroundColor: '#f0f0f0',
         marginBottom: 10,
+        marginTop: 10,
         borderRadius: 10
     },
     bookSearchInfo:{
@@ -70,8 +71,7 @@ export const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop: 5,
-        marginBottom: 5
+        marginTop: 5
     },
     headerContent: {
         flex: 1,
@@ -107,5 +107,9 @@ export const styles = StyleSheet.create({
     menuOptionText: {
         color: 'red',
         fontWeight: 'bold',
+    },
+    booksList: {
+        paddingBottom: 110,
+        borderRadius: 10
     },
 })
