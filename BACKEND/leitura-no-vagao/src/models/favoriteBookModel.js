@@ -18,7 +18,6 @@ const isBookFavorited = async (usuarioid, livroid) => {
     }
 };
 
-
 // Criar um registro de livro favoritado
 const createFavoriteBook = async ({ usuarioid, livroid }) => {
     try {
@@ -35,4 +34,20 @@ const createFavoriteBook = async ({ usuarioid, livroid }) => {
     }
 };
 
-module.exports = { createFavoriteBook, isBookFavorited};
+// Inativa os livros salvos na lista de favoritos
+const inactiveBookFavorited = async (usuarioid, livroid) => {
+    try {
+        const queryUpdate = `
+            UPDATE ${process.env.DB_SCHEMA}.livrossalvos
+            SET ativo = 'N'
+            WHERE usuarioid = $1 AND livroid = $2
+        `;
+        await pool.query(queryUpdate, [usuarioid, livroid]);
+        console.log('Livro inativado com sucesso.');
+    } catch (error) {
+        console.error('Erro ao inativar o livro salvo na lista de favoritos:', error);
+        throw error;
+    }
+};
+
+module.exports = { createFavoriteBook, isBookFavorited, inactiveBookFavorited };
