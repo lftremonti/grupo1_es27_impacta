@@ -158,7 +158,7 @@ export function Favorite({ route, navigation }: FavoriteProps) {
                     <Icon name="list-outline" size={25} style={styles.menuIcon} onPress={openDrawer}/>
                 </View>
                 <Text style={styles.title}>Sua lista de favoritos</Text>
-                {books ? (
+                {books && books.length > 0 ? (
                     <View style={{marginTop: 10, borderRadius: 50}}>
                         <FlatList
                             data={books}

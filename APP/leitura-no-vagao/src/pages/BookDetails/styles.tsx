@@ -6,6 +6,7 @@ export const styles = StyleSheet.create({
         flex: 1,
         padding: 20,
         backgroundColor: '#fff',
+        marginTop: 10,
     },
     bookCover: {
         width: 200,
@@ -234,12 +235,13 @@ export const styles = StyleSheet.create({
         borderTopLeftRadius: 10, // Bordas arredondadas no canto superior esquerdo
         borderTopRightRadius: 10, // Bordas arredondadas no canto superior direito
         overflow: 'hidden', // Para manter o conteúdo dentro das bordas arredondadas
+        backgroundColor: '#BDBABB'
     },
     modalBookFavoriteOverlay: {
         flex: 1,
     },
     dialog: {
-        backgroundColor: 'white',
+        backgroundColor: '#F8F7F9',
         padding: 20,
         borderRadius: 20,
         shadowColor: '#000',

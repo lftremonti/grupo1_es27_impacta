@@ -373,7 +373,7 @@ export function Home({ navigation }: Props) {
       {refreshing ? (
         <LoadingAnimation />
       ) : (
-        <ScrollView style={styles.container} refreshControl={
+        <ScrollView style={styles.container} showsVerticalScrollIndicator={false} refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
           <View style={styles.header}>
