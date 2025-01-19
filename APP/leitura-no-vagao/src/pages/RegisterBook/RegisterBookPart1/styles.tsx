@@ -1,12 +1,12 @@
 import { StyleSheet } from 'react-native';
-import { theme } from '../../global/styles/theme';
+import { theme } from '../../../global/styles/theme';
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
     backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
+    marginTop: 20
   },
   message: {
     textAlign: 'center',
@@ -18,7 +18,7 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginTop: 10
   },
   text: {
     fontSize: 24,
@@ -61,6 +61,17 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 15,
   },
+  viewInputImage:{
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.secondary90,
+    borderRadius: 5,
+    backgroundColor: theme.colors.secondary90,
+    height: 250,
+    paddingHorizontal: 10,
+    marginBottom: 15,
+  },
   searchInput: {
     flex: 1,
     fontSize: 16,
@@ -69,7 +80,7 @@ export const styles = StyleSheet.create({
   },
   backButton: {
     textAlign: 'left',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   backArrowColor: {
     color: theme.colors.secondary55,
@@ -80,13 +91,15 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: theme.colors.primary,
     marginVertical: 10,
-    marginBottom: 5
+    marginBottom: 5,
+    textAlign: 'center',
   },
   instructions: {
     fontSize: 13,
     fontFamily: theme.fonts.text400,
     color: theme.colors.secondary80,
     marginBottom: 20,
+    textAlign: 'center',
   },
   searchIcon: {
     paddingLeft: 10,
@@ -98,4 +111,10 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
+  bookCover: {
+    width: 200,
+    height: 300,
+    marginTop: 10,
+    alignSelf: 'center',
+},
 });

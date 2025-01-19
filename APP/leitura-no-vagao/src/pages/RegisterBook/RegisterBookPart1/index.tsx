@@ -7,14 +7,19 @@ import {
   ActivityIndicator,
   Alert,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  FlatList,
+  Image,
+  Dimensions
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { getBookInfo } from '../../services/BookService/BookService';
+import { getBookInfo } from '../../../services/BookService/BookService';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from './styles';
+import { Book } from '@/types/Book';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 // Definindo os tipos para a navegação
 type RootStackParamList = {
@@ -22,9 +27,9 @@ type RootStackParamList = {
   BookInfoScreen: { bookInfo: any };
 };
 
-export function RegisterBook() {
-  const [name, setName] = useState<string>(''); 
-  const [email, setEmail] = useState<string>(''); 
+export function RegisterBookPart1() {
+
+  const [images, setImages] = useState<string[]>([]);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState<boolean>(false);
   const [bookInfo, setBookInfo] = useState<any>(null); 
@@ -94,6 +99,41 @@ export function RegisterBook() {
     setScanned(false);
   };
 
+  // Obtenha a largura da tela
+  const { width: screenWidth } = Dimensions.get('window');
+
+  // Renderizar imagem individual
+  const renderImage = ({ item }: { item: string | null }) => {
+    // Define a fonte da imagem ou usa a imagem padrão
+    const imageSource = item
+    ? { uri: item } // Usa a imagem do URI
+    : require('../../../assets/AddPhotoPlaceholder.png');
+
+    return (
+      <TouchableOpacity>
+        <Image
+          source={imageSource}
+          style={[styles.bookCover, { width: screenWidth, height: 200, resizeMode: 'contain' }]}
+        />
+      </TouchableOpacity>
+    );
+  };
+
+  const handleAddImage = () => {
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        selectionLimit: 0, // Permite selecionar múltiplas imagens
+      },
+      (response) => {
+        if (response.assets) {
+          const newImages = response.assets.map((asset) => asset.uri || '');
+          setImages((prevImages) => [...prevImages, ...newImages]);
+        }
+      }
+    );
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
@@ -118,11 +158,35 @@ export function RegisterBook() {
                 Compartilhe o conhecimento e inspire outras pessoas! Doe seus livros e transforme vidas através da leitura.
               </Text>
 
+              <Text style={styles.instructions}>
+                Preencha todos os dados.
+              </Text>
+
               <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
-                <Text style={styles.label}>Nome do livro</Text>
+                <Text style={styles.label}>Adicionar fotos</Text>
+                <View style={styles.viewInputImage}>
+                  <FlatList
+                    data={images.length > 0 ? images : [null]}
+                    renderItem={renderImage}
+                    keyExtractor={(item, index) => `image-${index}`}
+                    horizontal
+                    pagingEnabled
+                    snapToAlignment="center"
+                    snapToInterval={screenWidth}
+                    showsHorizontalScrollIndicator={false}
+                  />
+                </View>
+              </Animated.View>
+
+              <Text style={styles.instructions}>
+              Preencha o ISBN no campo para que a gente complete os outros campos automaticamente. Ou, se preferir, use a câmera do celular para escanear o código ISBN do livro e deixe que a gente preencha tudo pra você!
+              </Text>
+
+              <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
+                <Text style={styles.label}>ISBN</Text>
                 <View style={styles.viewInput}>
                   <TextInput
-                    placeholder="O pequeno Príncipe"
+                    placeholder="Informe o codigo ISBN"
                     style={[styles.searchInput, styles.input]}
                     value={bookName}
                     onChangeText={setBookName}
@@ -133,6 +197,18 @@ export function RegisterBook() {
                 </View>
               </Animated.View>
 
+              <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
+                <Text style={styles.label}>Titulo do livro</Text>
+                <View style={styles.viewInput}>
+                  <TextInput
+                    placeholder="Informe o titulo"
+                    style={[styles.searchInput, styles.input]}
+                    value={bookName}
+                    onChangeText={setBookName}
+                  />
+                </View>
+              </Animated.View>
+
               <Animated.View entering={FadeInDown.delay(1450).duration(5000).springify()}>
                 {isLoading ? (
                   <TouchableOpacity style={styles.button}>
@@ -140,7 +216,7 @@ export function RegisterBook() {
                   </TouchableOpacity>
                 ) : (
                   <TouchableOpacity style={styles.button} onPress={() => {}}>
-                    <Text style={styles.buttonText}>Salvar</Text>
+                    <Text style={styles.buttonText}>Proximo</Text>
                   </TouchableOpacity>
                 )}
               </Animated.View>

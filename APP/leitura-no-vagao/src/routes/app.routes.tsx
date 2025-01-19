@@ -4,7 +4,7 @@ import * as SecureStore from 'expo-secure-store'; // Não se esqueça de importa
 import CustomDrawer from '../components/CustomDrawer';
 import { Home } from '../pages/Home';
 import { BookDetails } from '../pages/BookDetails';
-import { RegisterBook } from '../pages/RegisterBook';
+import { RegisterBookPart1 } from '../pages/RegisterBook/RegisterBookPart1';
 import CommentsBook from '../pages/CommentsBook';
 import { Favorite } from '../pages/favorite';
 import { Profile } from '../pages/Profile';
@@ -78,7 +78,7 @@ export function AppRoutes() {
 
       <Drawer.Screen 
         name="RegisterBook" 
-        component={RegisterBook} 
+        component={RegisterBookPart1 } 
         options={{
           title: 'Doar Livro',
           drawerIcon: ({ color, size }) => (
