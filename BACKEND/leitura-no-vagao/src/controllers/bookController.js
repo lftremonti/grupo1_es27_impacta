@@ -5,6 +5,7 @@ const { getAllBooksoogleApiBook } = require('../models/externalApi');
 const ApiError = require('../utils/ApiError');
 const { successResponse } = require('../utils/ApiResponse');
 
+/**Cria Livros */
 const createBook = async (req, res, next) => {
     try {
         const { titulo, autor, editora, ano_publicacao, descricao, ISBN10, ISBN13 } = req.body;
@@ -24,6 +25,7 @@ const createBook = async (req, res, next) => {
     }
 };
 
+/**Atualiza o Livro pelo id */
 const updateBook = async (req, res, next) => {
     const { id } = req.params;
     const { title, author, publishedDate, genre } = req.body;
@@ -38,11 +40,13 @@ const updateBook = async (req, res, next) => {
         const updatedBook = await bookModel.updateBook(id, { title, author, publishedDate, genre });
 
         return successResponse(res, 200, 'Livro atualizado com sucesso!', { book: updatedBook });
-    } catch (err) {
-        next(new ApiError(500, 'Erro ao atualizar o livro', err.message));
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Erro ao atualizar o livro', error.message));
     }
 };
 
+/** Busca o livro pelo ID */
 const getBookById = async (req, res, next) => {
     const { id } = req.params;
     try {
@@ -58,21 +62,25 @@ const getBookById = async (req, res, next) => {
         const averageBook = await reviewsModel.findReviewsAverageByIdBook(id);
         
         return successResponse(res, 200, 'Livro encontrado!', { book, bookImage, reviewsBook, averageBook });
-    } catch (err) {
-        next(new ApiError(500, 'Erro ao buscar o livro', err.message));
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Erro ao buscar o livro', error.message));
     }
 };
 
+/**Busca por todos os livros */
 const getAllBooks = async (req, res, next) => {
     const { limit = 8, offset = 0, categoryId} = req.query;
     try {
         const books = await bookModel.findAllBooks(parseInt(limit), parseInt(offset), parseInt(categoryId));
         return successResponse(res, 200, 'Livros encontrados!', { books });
-    } catch (err) {
-        next(new ApiError(500, 'Erro ao buscar os livros', err.message));
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Erro ao buscar os livros', error.message));
     }
 };
 
+/** Deleta o livro pelo id*/
 const deleteBookById = async (req, res, next) => {
     const { id } = req.params;
     try {
@@ -83,11 +91,13 @@ const deleteBookById = async (req, res, next) => {
 
         await bookModel.deleteBookById(id);
         return successResponse(res, 200, 'Livro deletado com sucesso!');
-    } catch (err) {
-        next(new ApiError(500, 'Erro ao deletar o livro', err.message));
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Erro ao deletar o livro', error.message));
     }
 };
 
+/**Busca o livro pelo ISBN */
 const getBookByIsbn = async (req, res, next) => {
     const { isbn } = req.params;
     try {
@@ -100,6 +110,7 @@ const getBookByIsbn = async (req, res, next) => {
         // Se não encontrar em nenhum lugar
         return next(new ApiError(404, 'Livro não encontrado em nenhum lugar.'));
     } catch (error) {
+        console.error(`Error: ${error}`);
         next(new ApiError(500, 'Erro ao buscar informações do livro.', error.message));
     }
 };
@@ -134,30 +145,36 @@ const getBookByIsbnCreate = async (req, res, next) => {
         // Se não encontrar em nenhum lugar
         return next(new ApiError(404, 'Livro não encontrado em nenhum lugar.'));
     } catch (error) {
+        console.error(`Error: ${error}`);
         next(new ApiError(500, 'Erro ao buscar informações do livro.', error.message));
     }
 };
 
+// Livros em Destaques
 const getFeaturedBooks = async (req, res, next) => { 
     const { limit = 8, offset = 0, categoryId } = req.query;
     try {
         const books = await bookModel.getFeaturedBooks(parseInt(limit), parseInt(offset), parseInt(categoryId));
         return successResponse(res, 200, 'Livros encontrados!', { books });
-    } catch (err) {
-        next(new ApiError(500, 'Erro ao buscar os livros', err.message));
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Erro ao buscar os livros', error.message));
     }
 };
 
+// Livros mais bem avaliados
 const getTopRatedBooks = async (req, res, next) => {
     const { limit = 8, offset = 0, categoryId } = req.query;
     try {
         const books = await bookModel.getTopRatedBooks(parseInt(limit), parseInt(offset), parseInt(categoryId));
         return successResponse(res, 200, 'Livros encontrados!', { books });
-    } catch (err) {
-        next(new ApiError(500, 'Erro ao buscar os livros', err.message));
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Erro ao buscar os livros', error.message));
     }
 };
 
+// Livros Recomendado para você
 const getRecommendedBooks  = async (req, res, next) => {
     const { id } = req.params;
     const { limit = 8, offset = 0, categoryId } = req.query;
@@ -168,19 +185,37 @@ const getRecommendedBooks  = async (req, res, next) => {
         }
 
         return successResponse(res, 200, 'Livro encontrado!', { books });
-    } catch (err) {
-        next(new ApiError(500, 'Erro ao buscar o livro', err.message));
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Erro ao buscar o livro', error.message));
     }
 };
 
+// Livros descobertas da semana
 const getNewArrivals = async (req, res, next) => {
     const { limit = 8, offset = 0, categoryId } = req.query;
     try {
         const books = await bookModel.getNewArrivals(parseInt(limit), parseInt(offset), parseInt(categoryId));
         return successResponse(res, 200, 'Livros encontrados!', { books });
-    } catch (err) {
-        next(new ApiError(500, 'Erro ao buscar os livros', err.message));
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Erro ao buscar os livros', error.message));
     }
 };
 
-module.exports = { createBook, updateBook, getBookById, getBookByIsbn, getAllBooks, deleteBookById, getFeaturedBooks, getTopRatedBooks, getRecommendedBooks, getNewArrivals };
+// Livros favoritos usuario logado
+const findFavoriteBooks = async (req, res, next) => {
+    const { id } = req.params;
+    const { limit = 8, offset = 0} = req.query;
+    try {
+        const books = await bookModel.findFavoriteBooks(parseInt(limit), parseInt(offset), parseInt(id));
+        return successResponse(res, 200, 'Livros encontrados!', { books });
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Erro ao buscar os livros', error.message));
+    }
+};
+
+module.exports = { createBook, updateBook, getBookById, getBookByIsbn, 
+    getAllBooks, deleteBookById, getFeaturedBooks, getTopRatedBooks, 
+    getRecommendedBooks, getNewArrivals, findFavoriteBooks };

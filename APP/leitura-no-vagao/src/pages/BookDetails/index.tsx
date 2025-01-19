@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, FlatList, TouchableOpacity, ScrollView, Dimensions, Modal, TextInput, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Provider } from 'react-native-paper';
+import { Button, Provider, Title } from 'react-native-paper';
 import { styles } from './styles';
 import { Ionicons } from '@expo/vector-icons';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -17,6 +17,10 @@ import { ActivityIndicator, Provider as PaperProvider } from 'react-native-paper
 import CustomDialog from '../../components/CustomDialog';
 import { ReviewsBook } from '../../types/ReviewsBook';
 import * as SecureStore from 'expo-secure-store';
+import LottieView from 'lottie-react-native';
+import { FavoriteBook } from '../../types/FavoriteBook';
+import { createFavoriteBookService } from '../../services/FavoriteBookService/FavoriteBookService';
+import { User } from '../../types/User'; // Importe a interface User
 
 type BookDetailsProps = {
   route: RouteProp<RootStackParamList, 'BookDetails'>;
@@ -32,9 +36,12 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
   const [currentIndex, setCurrentIndex] = useState(0); // Estado para o índice atual da imagem
   const flatListRef = useRef<FlatList<Book>>(null); // Referência para o FlatList
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
+  const [isBookFavoriteModalVisible, setIsBookFavoriteModalVisible] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [userRating, setUserRating] = useState(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isAnimationVisible, setAnimationVisible] = useState(false);
+  const [userData, setUserData] = useState<User | null>(null);
 
   const [errors, setErrors] = useState({ commentText: false });
 
@@ -76,12 +83,43 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
   //Abre o modal dos comentarios
   const openCommentModal = () => setIsCommentModalVisible(true);
 
+  //Abre o modal dos livros favoritos
+  const openBookFavoriteModal = async () => {
+    setAnimationVisible(true); // Inicia a animação imediatamente
+  
+    try {
+      const success = await handleAddFavoriteBook(); // Aguarda a API
+  
+      const timer = setTimeout(() => {
+        setAnimationVisible(false);
+        if (success) {
+          setIsBookFavoriteModalVisible(true); // Abre o modal somente em caso de sucesso
+        }
+      }, 1500); // Mantém a animação visível por 1.5 segundos após o retorno da API
+  
+      return () => clearTimeout(timer); // Limpa o temporizador ao desmontar
+    } catch (error) {
+      console.error("Erro ao abrir o modal de favoritos:", error);
+  
+      // Finaliza a animação após o tempo definido, sem abrir o modal
+      const timer = setTimeout(() => {
+        setAnimationVisible(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  };  
+
   //Fecha o modal dos comentarios
   const closeCommentModal = () => {
     setIsCommentModalVisible(false);
     setCommentText("");
     setUserRating(0);
     setErrors({ commentText: false });
+  };
+
+  //Fecha o modal dos livros favoritos
+  const closeBookFavoriteModal = () => {
+    setIsBookFavoriteModalVisible(false);
   };
 
   const fetchBookById = async () => {
@@ -96,6 +134,16 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
   };
 
   useEffect(() => {
+    const fetchUserData = async () => {
+      const storedToken = await SecureStore.getItemAsync('userToken');
+      const storedUserData = await SecureStore.getItemAsync('userData');
+      if (storedUserData) {
+        const parsedUserData = JSON.parse(storedUserData);
+        setUserData(parsedUserData);
+      }
+    };
+    
+    fetchUserData();
     fetchBookById();
   }, []);
 
@@ -150,6 +198,22 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
 
     return (
       <Image source={imageSource ? imageSource : require('../../assets/ErrorImageBook.png')} style={[styles.bookCover, { width: screenWidth, resizeMode: 'contain' }]} />
+    );
+  };
+
+  // Renderizar imagem individual
+  const renderImageModal = ({ item, style }: { item: Book; style?: object }) => {
+    const imageSource = item.imagem_url
+      ? { uri: item.imagem_url }
+      : item.imagem_base64
+      ? { uri: `data:image/png;base64,${item.imagem_base64}` }
+      : null;
+  
+    return (
+      <Image
+        source={imageSource ? imageSource : require('../../assets/ErrorImageBook.png')}
+        style={[styles.bookCover, style, { resizeMode: 'contain' }]} // Combina estilos
+      />
     );
   };
 
@@ -244,6 +308,39 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
     }
   };
 
+  const handleAddFavoriteBook = async (): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+  
+      const usuarioId = await getUserId();
+  
+      if (usuarioId === null) {
+        alert("Erro ao recuperar o ID do usuário. Tente novamente.");
+        return false;
+      }
+  
+      const newFavoriteBook: FavoriteBook = {
+        usuarioid: usuarioId,
+        livroid: book.ad_livros_id,
+      };
+  
+      const response = await createFavoriteBookService(newFavoriteBook);
+  
+      if (response.status === 201 || response.status === 200 && response.type === "success") {
+        return true;
+      } else {
+        showDialog("Erro", "Ocorreu um erro ao adicionar o livro aos favoritos.", "fail");
+        return false;
+      }
+    } catch (error) {
+      console.error("Erro ao adicionar o livro aos favoritos:", error);
+      showDialog("Erro", "Erro ao adicionar o livro aos favoritos. Tente novamente.", "fail");
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Provider>
       <CustomDialog
@@ -254,104 +351,127 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
         type={dialogType}
       />
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
-          <Text></Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Home' as never)} style={styles.backButton}>
-            <Icon name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
-          </TouchableOpacity>
+        <View style={styles.container}>
+          <FlatList
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+            data={[
+              // Adicione os itens que você quer exibir aqui, como objetos para as imagens, título, autor, etc.
+              {
+                type: 'header', // Pode ser um tipo para o cabeçalho
+                title: book.titulo,
+                author: book.autor,
+                description: book.descricao,
+                average: bookAverage,
+                reviews: bookReviews,
+                images: bookImage,
+              },
+              // Você pode adicionar mais objetos aqui conforme a estrutura do seu layout
+            ]}
+            keyExtractor={(item, index) => `item-${index}`}
+            renderItem={({ item }) => {
+              switch (item.type) {
+                case 'header':
+                  return (
+                    <View style={{ flex: 1 }}>
+                      <TouchableOpacity onPress={() => navigation.navigate('Home' as never)} style={styles.backButton}>
+                        <Icon name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
+                      </TouchableOpacity>
 
-          <View style={{borderBottomWidth: 2, borderBottomColor: '#ccc', paddingBottom: 20,}}>
-            <View style={{backgroundColor: '#f0f0f0', borderRadius: 20, borderBottomWidth: 1, borderBottomColor: '#ccc', paddingBottom: 0,}}>
-              {/* FlatList para imagens em carrossel */}
-              <FlatList
-                data={bookImage}
-                renderItem={renderImage}
-                keyExtractor={(item, index) => `bookimage-${item.ad_livros_id}-${index}`}
-                horizontal
-                pagingEnabled
-                snapToAlignment="center"
-                snapToInterval={screenWidth} // Define a largura para "prender" cada imagem na tela
-                showsHorizontalScrollIndicator={false}
-                onScrollToIndexFailed={() => {
-                  // Em caso de erro, você pode tratar aqui
-                }}
-                onMomentumScrollEnd={(event) => {
-                  const index = Math.floor(event.nativeEvent.contentOffset.x / screenWidth);
-                  setCurrentIndex(index); // Atualiza o índice atual
-                }}
-              />
-              <View style={styles.pagination}>
-                {bookImage.map((_, index) => (
-                  <Text key={index} style={[styles.paginationDot, currentIndex === index ? styles.activeDot : null]}>&bull;</Text>
-                ))}
-              </View>
-              <Text style={styles.bookTitle}>{book.titulo}</Text>
-              <Text style={styles.bookAuthor}>{book.autor}</Text>
-              {bookAverage && Number(bookAverage.total_avaliacoes) > 0 && (
-                <View style={styles.bookRatingContainer}>
-                  <Text style={styles.bookRatingStars}>{'★'.repeat(Number(bookAverage.media_avaliacao))}</Text>
-                  <Text style={styles.bookRatingAverage}>{Number(bookAverage.media_avaliacao).toFixed(1)}</Text>
-                </View>
-              )}
-            </View>
+                      <FlatList
+                        data={item.images}
+                        renderItem={renderImage}
+                        keyExtractor={(image, index) => `bookimage-${image.ad_livros_id}-${index}`}
+                        horizontal
+                        pagingEnabled
+                        snapToAlignment="center"
+                        snapToInterval={screenWidth}
+                        showsHorizontalScrollIndicator={false}
+                        onMomentumScrollEnd={(event) => {
+                          const index = Math.floor(event.nativeEvent.contentOffset.x / screenWidth);
+                          setCurrentIndex(index);
+                        }}
+                      />
 
-            <View style={{borderBottomWidth: 1, borderBottomColor: '#ccc', paddingBottom: 0, 
-        marginBottom: 5}} >
-              <Text style={styles.sectionTitle}>Detalhes</Text>
-            </View>
-            <View style={{backgroundColor: '#f0f0f0',borderRadius: 20, padding: 15}}>
-              <Text style={styles.bookDescription} numberOfLines={isDescriptionExpanded ? undefined : 5} ellipsizeMode="tail">{book.descricao.replace(/(\. )/g, '$1\n\n')}</Text>
-            </View>
-            <TouchableOpacity onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
-              <Text style={styles.toggleDescriptionText}>
-                {isDescriptionExpanded ? 'Ver menos' : 'Ver mais'}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.readButton}>
-              <Text style={styles.readButtonText}>Adicionar nos favoritos</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.readButton}>
-              <Text style={styles.readButtonText}>Quero ler</Text>
-            </TouchableOpacity>
-          
-          </View>
+                      <View style={styles.pagination}>
+                        {item.images.map((_, index) => (
+                          <Text key={index} style={[styles.paginationDot, currentIndex === index ? styles.activeDot : null]}>
+                            &bull;
+                          </Text>
+                        ))}
+                      </View>
+                      <Text style={styles.bookTitle}>{item.title}</Text>
+                      <Text style={styles.bookAuthor}>{item.author}</Text>
 
-          <View>
-            <View style={{borderBottomWidth: 1, borderBottomColor: '#ccc', paddingBottom: 0,}} >
-              <Text style={styles.sectionTitle}>Avaliações dos usuarios</Text>
-            </View>
-            {bookReviews && bookReviews.length > 0 ? (
-              <FlatList
-                data={bookReviews.slice(0, 3)} // Exibe os 3 primeiros comentários
-                renderItem={renderComment}
-                style={{marginTop: 10, marginBottom: 10}}
-                keyExtractor={(item, index) => `bookreviews-${item.ad_avaliacoes_id}-${index}`}
-                ListFooterComponent={
-                  bookReviews.length > 3 ? (
-                    <TouchableOpacity style={styles.loadMoreButton} onPress={navigateToComments}>
-                      <Text style={styles.loadMoreText}>Visualizar mais</Text>
-                    </TouchableOpacity>
-                  ) : null // Retorna null se não houver mais comentários
-                }
-              />
-            ) : (
-              <View style={[styles.commentContainer, {padding: 15, marginTop: 10, marginBottom: 10}]}>
-                <View style={styles.commentContent}>
-                  <Text style={[styles.commentText, {justifyContent: 'center', alignItems:'center', textAlign:'center'}]}>Não ha avaliações de usuarios para esse livro.</Text>
-                </View>
-              </View>
-            )}
-            <TouchableOpacity style={[styles.loadMoreButton, {marginBottom: 35}]} onPress={openCommentModal}>
-              <Text style={styles.loadMoreText}>Escreva um comentario</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
+                      {item.average && Number(item.average.total_avaliacoes) > 0 && (
+                        <View style={styles.bookRatingContainer}>
+                          <Text style={styles.bookRatingStars}>{'★'.repeat(Number(item.average.media_avaliacao))}</Text>
+                          <Text style={styles.bookRatingAverage}>{Number(item.average.media_avaliacao).toFixed(1)}</Text>
+                        </View>
+                      )}
 
+                      <View style={{ borderBottomWidth: 1, borderBottomColor: '#ccc', marginBottom: 5 }}>
+                        <Text style={styles.sectionTitle}>Detalhes</Text>
+                      </View>
+                      <View style={{ backgroundColor: '#f0f0f0', borderRadius: 20, padding: 15 }}>
+                        <Text style={styles.bookDescription} numberOfLines={isDescriptionExpanded ? undefined : 5} ellipsizeMode="tail">
+                          {item.description.replace(/(\. )/g, '$1\n\n')}
+                        </Text>
+                      </View>
+                      <TouchableOpacity onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
+                        <Text style={styles.toggleDescriptionText}>{isDescriptionExpanded ? 'Ver menos' : 'Ver mais'}</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.readButton} onPress={openBookFavoriteModal}>
+                        <Text style={styles.readButtonText}>Adicionar aos favoritos</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.readButton}>
+                        <Text style={styles.readButtonText}>Quero ler</Text>
+                      </TouchableOpacity>
+
+                      <View style={{ borderBottomWidth: 1, borderBottomColor: '#ccc', paddingBottom: 0 }}>
+                        <Text style={styles.sectionTitle}>Avaliações dos usuarios</Text>
+                      </View>
+
+                      {item.reviews && item.reviews.length > 0 ? (
+                        <FlatList
+                          data={item.reviews.slice(0, 3)}
+                          renderItem={renderComment}
+                          keyExtractor={(review, index) => `bookreviews-${review.ad_avaliacoes_id}-${index}`}
+                          ListFooterComponent={
+                            item.reviews.length > 3 ? (
+                              <TouchableOpacity style={styles.loadMoreButton} onPress={navigateToComments}>
+                                <Text style={styles.loadMoreText}>Visualizar mais</Text>
+                              </TouchableOpacity>
+                            ) : null
+                          }
+                          nestedScrollEnabled={true}
+                        />
+                      ) : (
+                        <View style={[styles.commentContainer, { padding: 15 }]}>
+                          <Text style={[styles.commentText, { textAlign: 'center' }]}>Não há avaliações de usuários para esse livro.</Text>
+                        </View>
+                      )}
+
+                      <TouchableOpacity style={[styles.loadMoreButton, { marginBottom: 35 }]} onPress={openCommentModal}>
+                        <Text style={styles.loadMoreText}>Escreva um comentário</Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                default:
+                  return null;
+              }
+            }}
+            nestedScrollEnabled={true}
+          />
+        </View>
+
+        {/** Modal para avaliação do livro */}
         <Modal
           transparent
           visible={isCommentModalVisible}
           animationType="slide"
           onRequestClose={closeCommentModal}
+          onDismiss={closeCommentModal}
         >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.modalOverlay}>
@@ -390,6 +510,50 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
           </View>
           </TouchableWithoutFeedback>
         </Modal>
+
+        {isAnimationVisible && (
+          <LottieView
+            source={require('../../assets/AnimationHeart.json')} // ajuste o caminho conforme necessário
+            autoPlay
+            loop={true} // Configura para tocar apenas uma vez
+            style={styles.animation}
+          />
+        )}
+
+        {/**Modal para exibir livros favoritos*/}
+        <Modal 
+          transparent
+          animationType="slide" 
+          visible={isBookFavoriteModalVisible} 
+          onDismiss={closeBookFavoriteModal} 
+          style={styles.modalBookFavoriteContainer}
+        >
+          <TouchableWithoutFeedback onPress={closeBookFavoriteModal}>
+            <View style={styles.modalBookFavoriteOverlay} />
+          </TouchableWithoutFeedback>
+          <View style={styles.dialog}>
+            <Title style={styles.BookFavoritetitle}>Adicionado aos seus livros favoritos</Title>
+            <ScrollView>
+              <View style={styles.subContainerModalBook}>
+                {renderImageModal({ item: book, style: styles.imageModalBook })}
+              </View>
+              <View style={{borderBottomWidth: 1, borderBottomColor: '#ccc', paddingBottom: 0, marginBottom: 5}}>
+                <Text style={[styles.message, {textAlign: 'center', fontWeight: 'bold'}]}>{book.titulo}</Text>
+              </View>
+            </ScrollView>
+            <Button 
+              mode="contained" 
+              onPress={() => navigation.navigate('Favorite', {user: userData!})} 
+              style={[styles.button, { backgroundColor: '#073F72' }]}
+            >
+              <Text style={styles.buttonText}>Sua lista de livros favoritos</Text>
+            </Button>
+            <Button mode="contained" onPress={closeBookFavoriteModal} style={[styles.button, { backgroundColor: '#073F72' }]}>
+              <Text style={styles.buttonText}>Fechar</Text>
+            </Button>
+          </View>
+        </Modal>
+
       </GestureHandlerRootView>
     </Provider>
   );

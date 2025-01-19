@@ -260,4 +260,32 @@ const findBookImageById = async (id) => {
     }
 };
 
-module.exports = { createBook, updateBook, getBookByISBN, findById, findAllBooks, deleteBookById, getFeaturedBooks, getTopRatedBooks, getRecommendedBooks, getNewArrivals, findBookImageById };
+// Livros favoritos usuario logado
+const findFavoriteBooks = async (limit, offset, id) => {
+    try {
+        const query = `
+            SELECT L.*, I.URLImagem AS imagem_url, I.ImagemBase64 AS imagem_base64
+            FROM ${process.env.DB_SCHEMA}.LivrosSalvos L2
+            LEFT JOIN ${process.env.DB_SCHEMA}.Livros L ON L2.livroid = L.ad_livros_id 
+            LEFT JOIN ${process.env.DB_SCHEMA}.LivroImagens LI ON L.ad_livros_id = LI.LivroID
+            LEFT JOIN ${process.env.DB_SCHEMA}.Imagem I ON LI.ImagemID = I.ad_imagem_id
+            WHERE L.ativo = 'Y' AND i.is_default = TRUE AND L2.usuarioid = $3 AND L2.ativo = 'Y'
+            LIMIT $1 OFFSET $2;
+        `;
+
+        const params = [limit, offset];
+        if (id) {
+            params.push(id);
+        }
+
+        const result = await pool.query(query, params);
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching favorite books:', error);
+        throw error;
+    }
+};
+
+module.exports = { createBook, updateBook, getBookByISBN, findById, 
+    findAllBooks, deleteBookById, getFeaturedBooks, getTopRatedBooks, 
+    getRecommendedBooks, getNewArrivals, findBookImageById, findFavoriteBooks};

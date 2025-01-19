@@ -373,7 +373,7 @@ export function Home({ navigation }: Props) {
       {refreshing ? (
         <LoadingAnimation />
       ) : (
-        <ScrollView style={styles.container} refreshControl={
+        <ScrollView style={styles.container} showsVerticalScrollIndicator={false} refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
           <View style={styles.header}>
@@ -391,7 +391,9 @@ export function Home({ navigation }: Props) {
             onPress={() => searchInputRef.current?.focus()}
           >
             <Ionicons name="search" size={20} style={styles.searchIcon} />
-            <TextInput ref={searchInputRef} placeholder="Pesquisar...." 
+            <TextInput 
+              ref={searchInputRef} 
+              placeholder="Pesquisar...." 
               style={styles.searchInput} 
               value={searchQuery}
               onChangeText={(text) => {

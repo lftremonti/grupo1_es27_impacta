@@ -18,8 +18,9 @@ const createReviewsBook = async (req, res, next) => {
         });
 
         return successResponse(res, 201, 'Avaliação criada com sucesso!', { reviews: newReviews });
-    } catch (err) {
-        next(new ApiError(500, 'Erro ao criar a avaliação', err.message));
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Erro ao criar a avaliação', error.message));
     }
 };
 
@@ -34,7 +35,8 @@ const getAllReviews = async (req, res, next) => {
 
         return successResponse(res, 200, 'Avaliações Encontradas!', { reviews: reviews });
     } catch (error) {
-        next(new ApiError(500, 'Server error', err.message));
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Server error', error.message));
     }
 };
 
@@ -50,7 +52,8 @@ const getReviewsById = async (req, res, next) => {
 
         return successResponse(res, 200, 'Avaliação Encontrada!', { reviews: reviews });
     } catch (error) {
-        next(new ApiError(500, 'Server error', err.message));
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Server error', error.message));
     }
 };
 
@@ -66,7 +69,8 @@ const getReviewsByBookId = async (req, res, next) => {
 
         return successResponse(res, 200, 'Avaliações Encontradas!', { reviews: reviews });
     } catch (error) {
-        next(new ApiError(500, 'Server error', err.message));
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Server error', error.message));
     }
 };
 

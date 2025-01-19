@@ -6,6 +6,7 @@ export const styles = StyleSheet.create({
         flex: 1,
         padding: 20,
         backgroundColor: '#fff',
+        marginTop: 10,
     },
     bookCover: {
         width: 200,
@@ -224,5 +225,73 @@ export const styles = StyleSheet.create({
         textShadowColor: '#FFD700', // gold color border
         textShadowOffset: { width: 1, height: 1 },
         textShadowRadius: 2,
+    },
+    modalBookFavoriteContainer: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        margin: 0,
+        borderTopWidth: 5,
+        borderTopColor: 'black',
+        borderTopLeftRadius: 10, // Bordas arredondadas no canto superior esquerdo
+        borderTopRightRadius: 10, // Bordas arredondadas no canto superior direito
+        overflow: 'hidden', // Para manter o conteúdo dentro das bordas arredondadas
+        backgroundColor: '#BDBABB'
+    },
+    modalBookFavoriteOverlay: {
+        flex: 1,
+    },
+    dialog: {
+        backgroundColor: '#F8F7F9',
+        padding: 20,
+        borderRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    iconContainer: {
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    BookFavoritetitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 10,
+        color: '#030202'
+    },
+    message: {
+        fontSize: 16,
+        textAlign: 'center',
+        marginBottom: 20,
+        color: '#030202'
+    },
+    button: {
+        marginTop: 10,
+    },
+    buttonText: {
+        color: 'white',
+    },
+    animation: {
+        position: 'absolute',
+        top: '15%',  // Alinha a animação verticalmente ao centro
+        left: '19%', // Alinha a animação horizontalmente ao centro
+        transform: [{ translateX: -50 }, { translateY: -50 }], // Centraliza totalment
+        width: 350, // Ajuste conforme o tamanho desejado
+        height: 350, // Ajuste conforme o tamanho desejado
+        backgroundColor: 'transparent', // Remove o fundo
+        zIndex: 10, // Garante que a animação esteja acima de outros componentes
+    },
+    subContainerModalBook: {
+        borderBottomWidth: 1, 
+        borderBottomColor: '#ccc', 
+        paddingBottom: 0, 
+        marginBottom: 5,
+    },
+    imageModalBook:{
+        width: 105,
+        height: 155,
+        marginBottom: 10
     }
 });

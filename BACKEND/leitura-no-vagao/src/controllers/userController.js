@@ -40,9 +40,9 @@ const create = async (req, res, next) => {
         await userRoles.assignRoleToUser(newUser.ad_usuario_id, role.ad_role_id);
         
         return successResponse(res, 201, 'Usuario criado com sucesso!');
-    } catch (err) {
-        console.error(`Error: ${err}`)
-        next(new ApiError(500, 'Server error', err.message));
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Server error', error.message));
     }
 };
 
@@ -67,7 +67,8 @@ const updateGoogleId = async (req, res, next) => {
         await userModel.updateGoogleId(idAuthGoogle, email);
         
         return successResponse(res, 201, 'Usuario criado com sucesso!');
-    } catch (err) {
+    } catch (error) {
+        console.error(`Error: ${error}`);
         next(new ApiError(500, 'Server error', err.message));
     }
 };
@@ -83,7 +84,8 @@ const getUserById = async (req, res, next) => {
 
         return successResponse(res, 200, 'Usuario Encontrado!', { user: user });
     } catch (error) {
-        next(new ApiError(500, 'Server error', err.message));
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Server error', error.message));
     }
 };
 
@@ -98,7 +100,8 @@ const getUserByEmail = async (req, res, next) => {
 
         return successResponse(res, 200, 'Usuario Encontrado!', { user: user.rows[0] });
     } catch (error) {
-        next(new ApiError(500, 'Server error', err.message));
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Server error', error.message));
     }
 };
 
@@ -116,6 +119,7 @@ const checkUserByEmail = async (req, res, next) => {
 
         return res.status(200).json({ exists: true, user: user.rows[0] }); // User found
     } catch (error) {
+        console.error(`Error: ${error}`);
         next(new ApiError(500, 'Server error', error.message));
     }
 };
