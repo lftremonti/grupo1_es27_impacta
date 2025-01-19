@@ -47,8 +47,9 @@ const login = async (req, res, next) => {
 
         // Retorna o token e os dados do usuário (sem a senha)
         return successResponse(res, 200, 'Login realizado com sucesso!', { token, user: { ...userResult, role: userRole }})
-    } catch (err) {
-        next(new ApiError(500, 'Server error', err.message));
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Server error', error.message));
     }
 };
 
@@ -104,6 +105,7 @@ const sendResetCode = async (req, res, next) => {
 
         return successResponse(res, 200, 'Um codigo de redefinição de senha foi enviado para o email informado.', { userId });
     } catch (error) {
+        console.error(`Error: ${error}`);
         next(new ApiError(500, 'server error', error.message));
     }
 };
@@ -120,6 +122,7 @@ const verifyResetCode = async (req, res, next) => {
 
         return successResponse(res, 200, 'Sucesso', result.rows[0].ad_usuario_id);
     } catch (error) {
+        console.error(`Error: ${error}`);
         next(new ApiError(500, 'Server error', error.message));
     }
 };
@@ -143,6 +146,7 @@ const resetPassword = async (req, res, next) => {
 
         return successResponse(res, 200, 'Senha resetada com sucesso!');
     } catch (error) {
+        console.error(`Error: ${error}`);
         next(new ApiError(500, 'Server error', error.message));
     }
 };
@@ -180,8 +184,9 @@ const loginWithGoogleId = async (req, res, next) => {
 
         // Retorna o token e os dados do usuário (sem a senha)
         return successResponse(res, 200, 'Login realizado com sucesso!', { token, user: { ...userResult, role: userRole } });
-    } catch (err) {
-        next(new ApiError(500, 'Server error', err.message));
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Server error', error.message));
     }
 };
 

@@ -17,8 +17,9 @@ const createCategoryBook = async (req, res, next) => {
         const newCategory = await categoryBookModel.createCategoryBook({ nome, descricao });
 
         return successResponse(res, 201, 'Categoria criada com sucesso!', { category: newCategory });
-    } catch (err) {
-        next(new ApiError(500, 'Erro ao criar a categoria', err.message));
+    } catch (error) {
+        next(new ApiError(500, 'Erro ao criar a categoria', error.message));
+        console.error(`Error: ${error}`);
     }
 };
 
@@ -34,6 +35,7 @@ const findByNameCategoryBook = async (req, res, next) => {
         return next(new ApiError(404, 'Categoria não encontrado em nenhum lugar.'));
     } catch (error) {
         next(new ApiError(500, 'Erro ao buscar informações da categoria.', error.message));
+        console.error(`Error: ${error}`);
     }
 };
 
@@ -41,8 +43,9 @@ const getAllCategory = async (req, res, next) => {
     try {
         const category = await categoryBookModel.findAllCategory();
         return successResponse(res, 200, 'Categorias encontrados!', { category });
-    } catch (err) {
-        next(new ApiError(500, 'Erro ao buscar as categorias', err.message));
+    } catch (error) {
+        next(new ApiError(500, 'Erro ao buscar as categorias', error.message));
+        console.error(`Error: ${error}`);
     }
 };
 
@@ -50,8 +53,9 @@ const getActiveCategoriesWithBooks = async (req, res, next) => {
     try {
         const category = await categoryBookModel.getActiveCategoriesWithBooks();
         return successResponse(res, 200, 'Categorias encontrados!', { category });
-    } catch (err) {
-        next(new ApiError(500, 'Erro ao buscar as categorias', err.message));
+    } catch (error) {
+        next(new ApiError(500, 'Erro ao buscar as categorias', error.message));
+        console.error(`Error: ${error}`);
     }
 };
 
@@ -64,8 +68,9 @@ const getCategoryById = async (req, res, next) => {
         }
 
         return successResponse(res, 200, 'Livro encontrado!', { book });
-    } catch (err) {
-        next(new ApiError(500, 'Erro ao buscar o livro', err.message));
+    } catch (error) {
+        next(new ApiError(500, 'Erro ao buscar o livro', error.message));
+        console.error(`Error: ${error}`);
     }
 };
 

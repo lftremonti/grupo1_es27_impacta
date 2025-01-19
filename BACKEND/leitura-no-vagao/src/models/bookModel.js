@@ -269,7 +269,7 @@ const findFavoriteBooks = async (limit, offset, id) => {
             LEFT JOIN ${process.env.DB_SCHEMA}.Livros L ON L2.livroid = L.ad_livros_id 
             LEFT JOIN ${process.env.DB_SCHEMA}.LivroImagens LI ON L.ad_livros_id = LI.LivroID
             LEFT JOIN ${process.env.DB_SCHEMA}.Imagem I ON LI.ImagemID = I.ad_imagem_id
-            WHERE L.ativo = 'Y' AND i.is_default = TRUE AND L2.usuarioid = $3
+            WHERE L.ativo = 'Y' AND i.is_default = TRUE AND L2.usuarioid = $3 AND L2.ativo = 'Y'
             LIMIT $1 OFFSET $2;
         `;
 
