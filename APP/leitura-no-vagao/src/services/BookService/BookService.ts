@@ -54,6 +54,31 @@ export async function getBookByIdService(id: number) {
   }
 }
 
+// Buscar livro por id
+export async function getBookByISBN(isbn: number) {
+  try {
+    const token = await SecureStorage.getItemAsync('userToken');
+    
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token || process.env.BYPASS_TOKEN_KEY}`,
+    };
+
+    const url = `${config.BASE_URL}/api/booksByIsbn/${isbn}`;
+
+    const response = await fetch(url, { method: 'GET', headers });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.log(`Error ao buscar os livros no banco: ${config.BASE_URL}`, error);
+    throw new Error('Error ao buscar os livros no banco de dados');
+  }
+}
+
 // Destaques
 export async function getFeaturedBooks(limit: number, offset: number, categoryId?: number) {
   try {

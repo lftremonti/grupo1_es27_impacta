@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { getBookInfo } from '../../../services/BookService/BookService';
+import { getBookByISBN } from '../../../services/BookService/BookService';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from './styles';
@@ -54,7 +54,7 @@ export function RegisterBookPart1() {
     if (!alertShown) {
       setScannedCode(data);
       setScanned(true);
-      const info = await getBookInfo(data);
+      const info = await getBookByISBN(data);
       setBookInfo(info);
       setAlertShown(true);
 
@@ -110,10 +110,10 @@ export function RegisterBookPart1() {
     : require('../../../assets/AddPhotoPlaceholder.png');
 
     return (
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => {handleAddImage}}>
         <Image
           source={imageSource}
-          style={[styles.bookCover, { width: screenWidth, height: 200, resizeMode: 'contain' }]}
+          style={[styles.bookCover, { width: screenWidth, height: 100, resizeMode: 'contain' }]}
         />
       </TouchableOpacity>
     );
@@ -152,7 +152,7 @@ export function RegisterBookPart1() {
               <Ionicons name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
             </TouchableOpacity>
 
-            <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()}>
+            <Animated.View entering={FadeInDown.delay(200).duration(3500).springify()}>
               <Text style={styles.welcome}>Doe um livro</Text>
               <Text style={styles.instructions}>
                 Compartilhe o conhecimento e inspire outras pessoas! Doe seus livros e transforme vidas através da leitura.
@@ -162,7 +162,7 @@ export function RegisterBookPart1() {
                 Preencha todos os dados.
               </Text>
 
-              <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
+              <Animated.View entering={FadeInDown.delay(450).duration(3500).springify()}>
                 <Text style={styles.label}>Adicionar fotos</Text>
                 <View style={styles.viewInputImage}>
                   <FlatList
@@ -182,7 +182,7 @@ export function RegisterBookPart1() {
               Preencha o ISBN no campo para que a gente complete os outros campos automaticamente. Ou, se preferir, use a câmera do celular para escanear o código ISBN do livro e deixe que a gente preencha tudo pra você!
               </Text>
 
-              <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
+              <Animated.View entering={FadeInDown.delay(650).duration(3500).springify()}>
                 <Text style={styles.label}>ISBN</Text>
                 <View style={styles.viewInput}>
                   <TextInput
@@ -192,12 +192,15 @@ export function RegisterBookPart1() {
                     onChangeText={setBookName}
                   />
                   <TouchableOpacity onPress={() => setScanned(true)}>
+                    <Ionicons name="search" size={24} style={styles.searchIcon} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setScanned(true)}>
                     <Ionicons name="camera" size={24} style={styles.searchIcon} />
                   </TouchableOpacity>
                 </View>
               </Animated.View>
 
-              <Animated.View entering={FadeInDown.delay(450).duration(5000).springify()}>
+              <Animated.View entering={FadeInDown.delay(850).duration(3500).springify()}>
                 <Text style={styles.label}>Titulo do livro</Text>
                 <View style={styles.viewInput}>
                   <TextInput
@@ -209,7 +212,7 @@ export function RegisterBookPart1() {
                 </View>
               </Animated.View>
 
-              <Animated.View entering={FadeInDown.delay(1450).duration(5000).springify()}>
+              <Animated.View entering={FadeInDown.delay(1050).duration(3500).springify()}>
                 {isLoading ? (
                   <TouchableOpacity style={styles.button}>
                     <ActivityIndicator size="large" color="#FFFFFF" />

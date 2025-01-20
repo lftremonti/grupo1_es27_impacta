@@ -6,7 +6,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#FFFFFF',
-    marginTop: 20
+    marginTop: 15
   },
   message: {
     textAlign: 'center',
@@ -18,7 +18,7 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10
+    marginTop: 5
   },
   text: {
     fontSize: 24,
@@ -68,7 +68,7 @@ export const styles = StyleSheet.create({
     borderColor: theme.colors.secondary90,
     borderRadius: 5,
     backgroundColor: theme.colors.secondary90,
-    height: 250,
+    height: 170,
     paddingHorizontal: 10,
     marginBottom: 15,
   },
@@ -80,7 +80,7 @@ export const styles = StyleSheet.create({
   },
   backButton: {
     textAlign: 'left',
-    marginBottom: 10,
+    marginBottom: 1,
   },
   backArrowColor: {
     color: theme.colors.secondary55,
@@ -112,8 +112,8 @@ export const styles = StyleSheet.create({
     color: '#fff',
   },
   bookCover: {
-    width: 200,
-    height: 300,
+    width: 100,
+    height: 100,
     marginTop: 10,
     alignSelf: 'center',
 },
