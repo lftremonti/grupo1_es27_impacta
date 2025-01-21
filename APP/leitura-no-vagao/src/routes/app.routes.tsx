@@ -11,12 +11,14 @@ import { Profile } from '../pages/Profile';
 import { Book } from '../types/Book';
 import { User } from '../types/User';
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { RegisterBookPart2 } from '@/pages/RegisterBook/RegisterBookPart2';
 
 // Definir o tipo de parâmetros para o BookDetails
 export type RootStackParamList = {
   Home: undefined;
   BookDetails: { book: Book };
   RegisterBook: undefined;
+  RegisterBookPart2: undefined;
   CommentsBook: { reviews: Array<any>; averageRating: any; book: Book };
   Profile: { user: User};
   Favorite: { user: User};
@@ -78,12 +80,20 @@ export function AppRoutes() {
 
       <Drawer.Screen 
         name="RegisterBook" 
-        component={RegisterBookPart1 } 
+        component={RegisterBookPart1} 
         options={{
           title: 'Doar Livro',
           drawerIcon: ({ color, size }) => (
             <Ionicons name="book-outline" size={size} color={color} />
           ),
+        }}
+      />
+
+      <Drawer.Screen 
+        name="RegisterBookPart2" 
+        component={RegisterBookPart2} 
+        options={{
+          drawerItemStyle: { display: 'none' },
         }}
       />
 

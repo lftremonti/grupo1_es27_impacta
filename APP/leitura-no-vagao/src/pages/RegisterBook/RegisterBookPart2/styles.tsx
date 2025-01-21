@@ -72,6 +72,18 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 15,
   },
+  descriptionInput:{
+    width: '100%',
+    height: 150,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
+    textAlignVertical: 'top',
+    fontSize: 16,
+    color: '#333',
+  },
   searchInput: {
     flex: 1,
     fontSize: 16,

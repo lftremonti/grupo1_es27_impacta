@@ -218,7 +218,7 @@ export function RegisterBookPart1() {
                     <ActivityIndicator size="large" color="#FFFFFF" />
                   </TouchableOpacity>
                 ) : (
-                  <TouchableOpacity style={styles.button} onPress={() => {}}>
+                  <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('RegisterBookPart2' as never)}>
                     <Text style={styles.buttonText}>Proximo</Text>
                   </TouchableOpacity>
                 )}
