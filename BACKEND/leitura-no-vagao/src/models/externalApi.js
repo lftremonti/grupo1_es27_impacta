@@ -10,7 +10,7 @@ const EXTERNAL_API_GOOGLE_API_BOOK_URL = 'https://www.googleapis.com/books/v1/vo
 //Criar mais de uma chave para mesma conta 
 //tentar utilizar outras contas google e outras chaves
 //Acessar o Google Cloud, criar um cahve de API
-const API_KEYS = ['AIzaSyAnj3AfFF8tBSSI7ehPJGBF12qtX1qduqU']; // Substitua pelas suas chaves de API do Google
+const API_KEYS = process.env.EXTERNAL_API_GOOGLE_KEY; // Substitua pelas suas chaves de API do Google
 
 // Função para buscar livro por ISBN
 const getBookByISBNGoogleBooks = async (isbn) => {
