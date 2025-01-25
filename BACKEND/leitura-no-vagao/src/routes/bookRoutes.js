@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { createBook, updateBook, getBookById, getBookByIsbn, getAllBooks, 
-    getFeaturedBooks, getTopRatedBooks, getRecommendedBooks, getNewArrivals, findFavoriteBooks } = require('../controllers/bookController');
+    getFeaturedBooks, getTopRatedBooks, getRecommendedBooks, getNewArrivals, findFavoriteBooks,
+    getBookByIsbnCreate } = require('../controllers/bookController');
 const { authMiddleware } = require('../middlewares/authMiddleware');
 
 // Criar um novo livro
@@ -12,6 +13,9 @@ router.put('/update/:id', authMiddleware, updateBook);
 
 // Rota para buscar informações de um livro pelo ISBN
 router.get('/isbn/:isbn', authMiddleware, getBookByIsbn);
+
+// Rota para buscar informações de um livro pelo ISBN nas apis externas
+router.get('/isbnCreate/:isbn', authMiddleware, getBookByIsbnCreate);
 
 // Livros em Destaques
 router.get('/featured', getFeaturedBooks);

@@ -1,7 +1,7 @@
 const bookModel = require('../models/bookModel');
 const reviewsModel = require('../models/reviewsModel');
 const { validarCamposObrigatorios } = require('../utils/validationUtils');
-const { getAllBooksoogleApiBook } = require('../models/externalApi');
+const { getBookByISBNGoogleBooks, getPublisherFromGoogleBooks } = require('../models/externalApi');
 const ApiError = require('../utils/ApiError');
 const { successResponse } = require('../utils/ApiResponse');
 
@@ -125,11 +125,13 @@ const getBookByIsbnCreate = async (req, res, next) => {
         if (bookFromDb) {
             return successResponse(res, 200, 'Livro encontrado no banco de dados!', { book: bookFromDb });
         }
-
+        
         // 2. Se não encontrado, tenta na primeira API externa
         try {
-            const bookFromApi1 = await externalApi1.getBookByISBN(isbn);
-            return successResponse(res, 200, 'Livro encontrado na primeira API!', { book: bookFromApi1 });
+            const bookFromApi1 = await getBookByISBNGoogleBooks(isbn);
+            const transformedBook = transformBookResponse(bookFromApi1);
+            const publisher = await getPublisherFromGoogleBooks(transformedBook.previewLink);
+            return successResponse(res, 200, 'Livro encontrado na primeira API!', { book: transformedBook, publisher });
         } catch (error) {
             console.error('Erro ao buscar na primeira API:', error.message);
         }
@@ -148,6 +150,21 @@ const getBookByIsbnCreate = async (req, res, next) => {
         console.error(`Error: ${error}`);
         next(new ApiError(500, 'Erro ao buscar informações do livro.', error.message));
     }
+};
+
+// Função para transformar a resposta da API em um formato mais simples
+const transformBookResponse = (apiResponse) => {
+    const bookData = apiResponse?.items?.[0]?.volumeInfo;
+
+    return {
+        title: bookData?.title || null,
+        authors: bookData?.authors || null,
+        publishedDate: bookData?.publishedDate || null,
+        description: bookData?.description || null,
+        categories: bookData?.categories || null,
+        textSnippet: apiResponse?.items?.[0]?.searchInfo?.textSnippet || null,
+        previewLink: bookData?.previewLink || null, // Adicionando o previewLink
+    };
 };
 
 // Livros em Destaques
@@ -218,4 +235,4 @@ const findFavoriteBooks = async (req, res, next) => {
 
 module.exports = { createBook, updateBook, getBookById, getBookByIsbn, 
     getAllBooks, deleteBookById, getFeaturedBooks, getTopRatedBooks, 
-    getRecommendedBooks, getNewArrivals, findFavoriteBooks };
+    getRecommendedBooks, getNewArrivals, findFavoriteBooks, getBookByIsbnCreate };
