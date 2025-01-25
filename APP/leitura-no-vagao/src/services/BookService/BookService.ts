@@ -54,8 +54,8 @@ export async function getBookByIdService(id: number) {
   }
 }
 
-// Buscar livro por id
-export async function getBookByISBN(isbn: number) {
+// Buscar livro pelo ISBN
+export async function getBookByISBN(isbn: string) {
   try {
     const token = await SecureStorage.getItemAsync('userToken');
     
@@ -64,7 +64,7 @@ export async function getBookByISBN(isbn: number) {
       'Authorization': `Bearer ${token || process.env.BYPASS_TOKEN_KEY}`,
     };
 
-    const url = `${config.BASE_URL}/api/booksByIsbn/${isbn}`;
+    const url = `${config.BASE_URL}/api/books/isbnCreate/${isbn}`;
 
     const response = await fetch(url, { method: 'GET', headers });
 

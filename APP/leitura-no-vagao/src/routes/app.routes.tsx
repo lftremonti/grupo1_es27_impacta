@@ -18,7 +18,7 @@ export type RootStackParamList = {
   Home: undefined;
   BookDetails: { book: Book };
   RegisterBook: undefined;
-  RegisterBookPart2: undefined;
+  RegisterBookPart2: { bookInfo: any };
   CommentsBook: { reviews: Array<any>; averageRating: any; book: Book };
   Profile: { user: User};
   Favorite: { user: User};
