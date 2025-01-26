@@ -130,6 +130,7 @@ const getBookByIsbnCreate = async (req, res, next) => {
         try {
             const bookFromApi1 = await getBookByISBNGoogleBooks(isbn);
             const transformedBook = transformBookResponse(bookFromApi1);
+            console.log("Teste:", transformedBook)
             const publisher = await getPublisherFromGoogleBooks(transformedBook.previewLink);
             return successResponse(res, 200, 'Livro encontrado na primeira API!', { book: transformedBook, publisher });
         } catch (error) {
