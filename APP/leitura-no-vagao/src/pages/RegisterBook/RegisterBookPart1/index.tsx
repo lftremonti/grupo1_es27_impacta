@@ -11,16 +11,16 @@ import {
   FlatList,
   Image,
   Dimensions,
-  ScrollView
+  ScrollView,
+  ToastAndroid,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { getBookByISBN } from '../../../services/BookService/BookService';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from './styles';
-import { Book } from '@/types/Book';
-import { launchImageLibrary } from 'react-native-image-picker';
+import * as ImagePicker from 'expo-image-picker';
 
 // Definindo os tipos para a navegação
 type RootStackParamList = {
@@ -33,11 +33,8 @@ export function RegisterBookPart1() {
   const [images, setImages] = useState<string[]>([]);
   const [isbn, setIsbn] = useState<string>('');
   const [title, setTitle] = useState<string>('');
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState<boolean>(false);
   const [bookInfo, setBookInfo] = useState<any>(null); 
-  const [scannedCode, setScannedCode] = useState<string | null>(null);
-  const [alertShown, setAlertShown] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isLoadingIsbn, setIsLoadingIsbn] = useState<boolean>(false);
   const [permission, requestPermission] = useCameraPermissions();
@@ -87,14 +84,14 @@ export function RegisterBookPart1() {
   }
 
   if (!permission.granted) {
-      return (
-          <View style={styles.container}>
-              <Text style={styles.message}>Precisamos da sua permissão para mostrar a câmera</Text>
-              <TouchableOpacity onPress={requestPermission} style={styles.button}>
-                  <Text style={styles.text}>Conceder permissão</Text>
-              </TouchableOpacity>
-          </View>
-      );
+    return (
+      <View style={styles.container}>
+        <Text style={styles.message}>Precisamos da sua permissão para mostrar a câmera</Text>
+        <TouchableOpacity onPress={requestPermission} style={styles.button}>
+          <Text style={styles.text}>Conceder permissão</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
 
   const closeCamera = () => {
@@ -106,7 +103,7 @@ export function RegisterBookPart1() {
 
   // Renderizar imagem individual
   const renderImage = ({ item }: { item: string | null }) => (
-    <TouchableOpacity onPress={handleAddImage}>
+    <TouchableOpacity onPress={handlePickerImage}>
       <Image
         source={item ? { uri: item } : require('../../../assets/AddPhotoPlaceholder.png')}
         style={styles.bookCover}
@@ -114,21 +111,30 @@ export function RegisterBookPart1() {
     </TouchableOpacity>
   );
 
-  const handleAddImage = () => {
-    console.log("Entrou no metodo handleAddImage")
-    launchImageLibrary(
-      {
-        mediaType: 'photo',
-        selectionLimit: 0, // Permite selecionar múltiplas imagens
-      },
-      (response) => {
-        if (response.assets) {
-          const newImages = response.assets.map((asset) => asset.uri || '');
-          setImages((prevImages) => [...prevImages, ...newImages]);
-        }
+  const handlePickerImage = async () => {
+    const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!granted) {
+      Alert.alert(
+        'Permissão necessária',
+        'Permita que sua aplicação acesse as imagens'
+      );
+    } else {
+      const { assets, canceled } = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        base64: true,
+        aspect: [4, 4],
+        quality: 1,
+      });
+
+      console.log(assets)
+      if (canceled) {
+        ToastAndroid.show('Operação cancelada', ToastAndroid.SHORT);
+      } else {
+        return;
       }
-    );
-  };
+    }
+  };  
 
   const handleSearchIsbn = async () => {
     setErrorsIsbn({ isbn: false });
@@ -165,19 +171,18 @@ export function RegisterBookPart1() {
   }
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.container}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <ScrollView showsVerticalScrollIndicator={false}>
           {scanned ? (
             <CameraView style={styles.camera} onBarcodeScanned={handleBarCodeScanned}>
               <View style={styles.buttonContainer}>
-                  <TouchableOpacity style={styles.button} onPress={closeCamera}>
-                      <Text style={styles.text}>Fechar Câmera</Text>
-                  </TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={closeCamera}>
+                  <Text style={styles.text}>Fechar Câmera</Text>
+                </TouchableOpacity>
               </View>
             </CameraView>
           ) : (
-
             <>
               <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.backButton}>
                 <Ionicons name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
@@ -194,7 +199,7 @@ export function RegisterBookPart1() {
                 </Text>
 
                 <Animated.View entering={FadeInDown.delay(450).duration(3500).springify()}>
-                  <Text style={styles.label}>Adicionar fotos</Text>
+                  <Text style={styles.label}>Adicionar fotos do livro</Text>
                   <View style={styles.viewInputImage}>
                     <FlatList
                       data={images.length > 0 ? images : [null]}
@@ -214,10 +219,10 @@ export function RegisterBookPart1() {
                 </Text>
 
                 <Animated.View entering={FadeInDown.delay(650).duration(3500).springify()}>
-                  <Text style={styles.label}>ISBN</Text>
+                  <Text style={styles.label}>ISBN do livro</Text>
                   <View style={styles.viewInput}>
                     <TextInput
-                      placeholder="Informe o codigo ISBN"
+                      placeholder="Informe o codigo ISBN do livro"
                       style={[styles.searchInput, styles.input]}
                       value={isbn}
                       onChangeText={setIsbn}
@@ -241,7 +246,7 @@ export function RegisterBookPart1() {
                   <Text style={styles.label}>Titulo do livro</Text>
                   <View style={styles.viewInput}>
                     <TextInput
-                      placeholder="Informe o titulo"
+                      placeholder="Informe o titulo do livro"
                       style={[styles.searchInput, styles.input]}
                       value={title}
                       onChangeText={setTitle}
@@ -267,8 +272,9 @@ export function RegisterBookPart1() {
               </Animated.View>
             </>
           )}
-        </View>
-      </TouchableWithoutFeedback>
-    </ScrollView>
+        
+        </ScrollView>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }

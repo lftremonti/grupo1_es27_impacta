@@ -12,6 +12,7 @@ import { Book } from '../types/Book';
 import { User } from '../types/User';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { RegisterBookPart2 } from '@/pages/RegisterBook/RegisterBookPart2';
+import { RegisterBookPart3 } from '@/pages/RegisterBook/RegisterBookPart3';
 
 // Definir o tipo de parâmetros para o BookDetails
 export type RootStackParamList = {
@@ -19,6 +20,7 @@ export type RootStackParamList = {
   BookDetails: { book: Book };
   RegisterBook: undefined;
   RegisterBookPart2: { bookInfo: any };
+  RegisterBookPart3: { bookInfo: any };
   CommentsBook: { reviews: Array<any>; averageRating: any; book: Book };
   Profile: { user: User};
   Favorite: { user: User};
@@ -92,6 +94,14 @@ export function AppRoutes() {
       <Drawer.Screen 
         name="RegisterBookPart2" 
         component={RegisterBookPart2} 
+        options={{
+          drawerItemStyle: { display: 'none' },
+        }}
+      />
+
+      <Drawer.Screen 
+        name="RegisterBookPart3" 
+        component={RegisterBookPart3} 
         options={{
           drawerItemStyle: { display: 'none' },
         }}

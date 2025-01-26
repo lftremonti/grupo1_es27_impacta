@@ -61,6 +61,25 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 15,
   },
+  viewInputCategory: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.secondary90,
+    borderRadius: 10,  // Borda arredondada
+    backgroundColor: theme.colors.secondary90,
+    marginBottom: 15,
+    paddingLeft: 10,  // Espaçamento interno
+    paddingRight: 10,
+  },
+  pickerStyle: {
+    width: '100%',
+    borderRadius: 10,  // Bordas arredondadas dentro do Picker
+    backgroundColor: theme.colors.secondary90
+  },
+  selectedPickerItem: {
+    color: theme.colors.secondary90, // Cor do item selecionado
+  },
   viewInputImage:{
     flexDirection: 'row',
     alignItems: 'center',
@@ -71,6 +90,18 @@ export const styles = StyleSheet.create({
     height: 170,
     paddingHorizontal: 10,
     marginBottom: 15,
+  },
+  descriptionInput:{
+    width: '100%',
+    height: 150,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
+    textAlignVertical: 'top',
+    fontSize: 16,
+    color: '#333',
   },
   searchInput: {
     flex: 1,
@@ -116,5 +147,38 @@ export const styles = StyleSheet.create({
     height: 100,
     marginTop: 10,
     alignSelf: 'center',
-},
+  },
+  map: {
+    width: '100%',
+    height: 450,
+    marginVertical: 20
+  },
+  zoomControls: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  zoomButton: {
+    backgroundColor: '#f0f0f0',
+    padding: 12,
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  imageContainer: {
+    flexDirection: 'row',
+    marginVertical: 16,
+  },
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+    marginRight: 8,
+  },
 });

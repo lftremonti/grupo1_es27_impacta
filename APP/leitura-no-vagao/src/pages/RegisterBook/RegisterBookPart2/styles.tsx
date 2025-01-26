@@ -6,7 +6,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#FFFFFF',
-    marginTop: 15
+    marginTop: 22
   },
   message: {
     textAlign: 'center',
@@ -60,6 +60,25 @@ export const styles = StyleSheet.create({
     height: 50,
     paddingHorizontal: 10,
     marginBottom: 15,
+  },
+  viewInputCategory: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.secondary90,
+    borderRadius: 10,  // Borda arredondada
+    backgroundColor: theme.colors.secondary90,
+    marginBottom: 15,
+    paddingLeft: 10,  // Espaçamento interno
+    paddingRight: 10,
+  },
+  pickerStyle: {
+    width: '100%',
+    borderRadius: 10,  // Bordas arredondadas dentro do Picker
+    backgroundColor: theme.colors.secondary90
+  },
+  selectedPickerItem: {
+    color: theme.colors.secondary90, // Cor do item selecionado
   },
   viewInputImage:{
     flexDirection: 'row',
@@ -128,5 +147,5 @@ export const styles = StyleSheet.create({
     height: 100,
     marginTop: 10,
     alignSelf: 'center',
-},
+  }
 });
