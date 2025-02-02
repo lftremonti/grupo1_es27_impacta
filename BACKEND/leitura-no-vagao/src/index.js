@@ -9,6 +9,7 @@ const bookRoutes = require('./routes/bookRoutes');
 const favoriteBookRoutes = require('./routes/favoriteBookRoutes');
 const categoryBooksRoutes = require('./routes/categoryBooksRoutes');
 const reviewsBooksRoutes = require('./routes/reviewsRoutes');
+const donationPointRoutes = require('./routes/donationPointRoutes');
 
 // Importa o middleware de tratamento de erros personalizado.
 const errorHandler = require('./middlewares/errorHandler');
@@ -26,6 +27,7 @@ app.use('/api/books', bookRoutes);
 app.use('/api/favoriteBook', favoriteBookRoutes);
 app.use('/api/categoryBooks', categoryBooksRoutes);
 app.use('/api/reviews', reviewsBooksRoutes);
+app.use('/api/donationPoint', donationPointRoutes);
 
 //Middleware de tratamento de erros. Se qualquer rota ou operação lançar um erro, este middleware será chamado.
 app.use(errorHandler);
