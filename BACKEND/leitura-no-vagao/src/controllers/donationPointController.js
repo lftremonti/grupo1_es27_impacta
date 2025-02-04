@@ -4,9 +4,8 @@ const { successResponse } = require('../utils/ApiResponse');
 
 /**Busca todos os pontos de doação de livros */
 const getAllDonationPoint = async (req, res, next) => {
-    const { limit = 8, offset = 0} = req.query;
     try {
-        const donationPoint = await donationPointModel.findAllDonationPoint(parseInt(limit), parseInt(offset));
+        const donationPoint = await donationPointModel.findAllDonationPoint();
         return successResponse(res, 200, 'Pontos de doação de livros encontrados!', { donationPoint });
     } catch (error) {
         console.error(`Error: ${error}`);
