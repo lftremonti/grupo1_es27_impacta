@@ -1,3 +1,4 @@
+//syles registerBookpart1
 import { StyleSheet } from 'react-native';
 import { theme } from '../../../global/styles/theme';
 
@@ -68,7 +69,7 @@ export const styles = StyleSheet.create({
     borderColor: theme.colors.secondary90,
     borderRadius: 5,
     backgroundColor: theme.colors.secondary90,
-    height: 170,
+    height: 230,
     paddingHorizontal: 10,
     marginBottom: 15,
   },
@@ -112,8 +113,8 @@ export const styles = StyleSheet.create({
     color: '#fff',
   },
   bookCover: {
-    width: 100,
-    height: 100,
+    width: 200,
+    height: 200,
     marginTop: 10,
     alignSelf: 'center',
 },

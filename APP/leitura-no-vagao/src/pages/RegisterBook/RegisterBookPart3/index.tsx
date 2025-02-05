@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ActivityIndicator,
   TouchableWithoutFeedback,
   Keyboard,
   ScrollView,
@@ -20,6 +19,10 @@ import { RouteProp, useFocusEffect } from '@react-navigation/native';
 import { styles } from './styles';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/routes/app.routes';
+import { Provider } from 'react-native-paper';
+import CustomDialog from '@/components/CustomDialog';
+import { Stations } from '@/types/Stations';
+import { getAllDonationPoint } from '../../../services/StationsService/StationsService';
 
 type BookRegisterProps = {
   route: RouteProp<RootStackParamList, 'RegisterBookPart3'>;
@@ -27,24 +30,29 @@ type BookRegisterProps = {
 };
 
 export function RegisterBookPart3({ route, navigation }: BookRegisterProps){
-  const { bookInfo } = route.params;
+  const { bookInfo, bookDataInfo } = route.params;
 
-  const [selectedStation, setSelectedStation] = useState<number | null>(null);
   const [currentLocation, setCurrentLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [stations, setStations] = useState<Stations[]>([]);
+  const [selectedStation, setSelectedStation] = useState<number>();
+  const [errors, setErrors] = useState({ selectedStation: false });
 
-  const stations = [
-    { id: 1, name: 'Estação Sé', latitude: -23.55052, longitude: -46.633308 },
-    { id: 2, name: 'Estação Consolação', latitude: -23.556735, longitude: -46.662327 },
-    { id: 3, name: 'Estação Luz', latitude: -23.536201, longitude: -46.633105 },
-  ];
+  const [visible, setVisible] = useState<boolean>(false);
+  const [dialogTitle, setDialogTitle] = useState<string>('');
+  const [dialogMessage, setDialogMessage] = useState<string>('');
+  const [dialogType, setDialogType] = useState<'alert' | 'warning' | 'success' | 'fail'>('alert');
+  
+  const showDialog = (title: string, message: string, type: 'alert' | 'warning' | 'success' | 'fail') => {
+    setDialogTitle(title);
+    setDialogMessage(message);
+    setDialogType(type);
+    setVisible(true);
+  };
 
-  const selectedLocation = selectedStation
-  ? stations.find((station) => station.id === selectedStation)
-  : null;
 
   useEffect(() => {
     const requestLocationPermission = async () => {
@@ -61,7 +69,22 @@ export function RegisterBookPart3({ route, navigation }: BookRegisterProps){
     };
 
     requestLocationPermission();
+    fetchStations();
   }, []);
+
+  const selectedLocation = selectedStation
+  ? stations.find((station) => station.ad_pontodoacao_id === selectedStation)
+  : null;
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        // Apenas redefinir se necessário
+        setSelectedStation(0);
+        setStations([]);
+      };
+    }, [])
+  );
 
   const getCurrentLocation = () => {
     Geolocation.getCurrentPosition(
@@ -79,96 +102,165 @@ export function RegisterBookPart3({ route, navigation }: BookRegisterProps){
     );
   };
 
+  const handleRegisterBook = async () => {
+    // Resetar erros
+    setErrors({ selectedStation: false });
+    // Verifica se os campos estão vazios
+    const newErrors = {
+      selectedStation: !selectedStation,
+    };
+  
+    // Mostrar a caixa de erro pedindo que o usuário não preencheu todos os campos
+    if (newErrors.selectedStation) {
+      setErrors(newErrors);
+      showDialog('Campos Obrigatórios', 'Por favor, preencha todos os campos!', 'fail');
+      return;
+    }
+  
+    setIsLoading(true);
+
+    try {
+
+      const newBookDataInfo = {
+        bookDataInfo,
+        selectedStation
+      };
+
+      console.log(newBookDataInfo);
+
+    } catch (error) {
+      showDialog('Erro', `Lamentamos pelo ocorrido. Por favor, tente novamente.`, 'fail');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const hideDialog = () => {
+    setVisible(false);
+  };
+
+  const fetchStations = async () => {
+    try {
+      const response = await getAllDonationPoint(); 
+  
+      if (response?.data?.donationPoint) {
+        const formattedStations = response.data.donationPoint.map((station: Stations) => ({
+          ...station,
+          latitude: Number(station.latitude),  // Converte para número
+          longitude: Number(station.longitude) // Converte para número
+        }));
+        setStations(formattedStations);
+      } else {
+        setStations([]); // Garante um array vazio caso não existam dados
+      }
+    } catch (error) {
+      console.error('Erro ao buscar estações:', error);
+      setStations([]); // Evita `undefined`
+    }
+  };
+  
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.container}>
+    <Provider>
+      <CustomDialog
+        visible={visible}
+        hideDialog={hideDialog}
+        title={dialogTitle}
+        message={dialogMessage}
+        type={dialogType}
+      />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView showsVerticalScrollIndicator={false}>
-          <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.backButton}>
-            <Ionicons name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
-          </TouchableOpacity>
+          <View style={styles.container}>
+            <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.backButton}>
+              <Ionicons name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
+            </TouchableOpacity>
 
-          <Animated.View entering={FadeInDown.delay(200).duration(3500).springify()}>
-            <Text style={styles.welcome}>Doe um livro</Text>
-            <Text style={styles.instructions}>
-              Compartilhe o conhecimento e inspire outras pessoas! Doe seus livros e transforme vidas através da leitura.
-            </Text>
+            <Animated.View entering={FadeInDown.delay(200).duration(3500).springify()}>
+              <Text style={styles.welcome}>Doe um livro</Text>
+              <Text style={styles.instructions}>
+                Compartilhe o conhecimento e inspire outras pessoas! Doe seus livros e transforme vidas através da leitura.
+              </Text>
 
-            <Animated.View entering={FadeInDown.delay(450).duration(3500).springify()}>
-              <Text style={styles.label}>Selecione uma estação de São Paulo:</Text>
-              <View style={styles.viewInputCategory}>
+              <Animated.View entering={FadeInDown.delay(450).duration(3500).springify()}>
+                <Text style={styles.label}>Selecione uma estação de São Paulo:</Text>
+                <View style={[styles.viewInputCategory, errors.selectedStation && { borderColor: 'red', borderWidth: 1 }]}>
                 <Picker
-                  selectedValue={selectedStation}
+                  selectedValue={selectedStation ?? stations[0]?.ad_pontodoacao_id}
                   onValueChange={(itemValue) => setSelectedStation(itemValue)}
                   style={styles.pickerStyle}
                 >
-                  <Picker.Item label="Selecione um endereço" value={null} />
-                  {stations.map((station) => (
-                    <Picker.Item key={station.id} label={station.name} value={station.id} />
+                  <Picker.Item label="Selecione um endereço" value='' />
+                  {stations.map((station: Stations) => (
+                    <Picker.Item 
+                      key={station.ad_pontodoacao_id} 
+                      label={station.nome} 
+                      value={station.ad_pontodoacao_id} />
                   ))}
                 </Picker>
-              </View>
-            </Animated.View>
+                </View>
+              </Animated.View>
 
-            <Animated.View entering={FadeInDown.delay(650).duration(3500).springify()}>
-              <Text style={styles.label}>Localização no mapa</Text>
-              <View style={styles.viewInputCategory}>
-                <MapView
-                  style={styles.map}
-                  initialRegion={{
-                    latitude: currentLocation?.latitude || -23.55052,
-                    longitude: currentLocation?.longitude || -46.633308,
-                    latitudeDelta: 0.05,
-                    longitudeDelta: 0.05,
-                  }}
-                  region={
-                    selectedLocation
-                      ? {
-                          latitude: selectedLocation.latitude,
-                          longitude: selectedLocation.longitude,
-                          latitudeDelta: 0.01,
-                          longitudeDelta: 0.01,
-                        }
-                      : currentLocation
-                      ? {
+              <Animated.View entering={FadeInDown.delay(650).duration(3500).springify()}>
+                <Text style={styles.label}>Localização no mapa</Text>
+                <View style={styles.viewInputCategory}>
+                  <MapView
+                    style={styles.map}
+                    initialRegion={{
+                      latitude: currentLocation?.latitude || -23.55052,
+                      longitude: currentLocation?.longitude || -46.633308,
+                      latitudeDelta: 0.05,
+                      longitudeDelta: 0.05,
+                    }}
+                    region={
+                      selectedLocation
+                        ? {
+                            latitude: selectedLocation.latitude,
+                            longitude: selectedLocation.longitude,
+                            latitudeDelta: 0.01,
+                            longitudeDelta: 0.01,
+                          }
+                        : currentLocation
+                        ? {
+                            latitude: currentLocation.latitude,
+                            longitude: currentLocation.longitude,
+                            latitudeDelta: 0.05,
+                            longitudeDelta: 0.05,
+                          }
+                        : undefined
+                    }
+                  >
+                    {selectedLocation && (
+                      <Marker
+                        coordinate={{
+                          latitude: Number(selectedLocation.latitude), // Converte para número
+                          longitude: Number(selectedLocation.longitude), // Converte para número
+                        }}
+                        title={selectedLocation.nome}
+                      />
+                    )}
+                    {currentLocation && (
+                      <Marker
+                        coordinate={{
                           latitude: currentLocation.latitude,
                           longitude: currentLocation.longitude,
-                          latitudeDelta: 0.05,
-                          longitudeDelta: 0.05,
-                        }
-                      : undefined
-                  }
-                >
-                  {selectedLocation && (
-                    <Marker
-                      coordinate={{
-                        latitude: selectedLocation.latitude,
-                        longitude: selectedLocation.longitude,
-                      }}
-                      title={selectedLocation.name}
-                    />
-                  )}
-                  {currentLocation && (
-                    <Marker
-                      coordinate={{
-                        latitude: currentLocation.latitude,
-                        longitude: currentLocation.longitude,
-                      }}
-                      title="Sua localização"
-                      pinColor="blue"
-                    />
-                  )}
-                </MapView>
-              </View>
-            </Animated.View>
+                        }}
+                        title="Sua localização"
+                        pinColor="blue"
+                      />
+                    )}
+                  </MapView>
+                </View>
+              </Animated.View>
 
-            <Animated.View entering={FadeInDown.delay(850).duration(3500).springify()}>
-              <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home' as never)}>
-                <Text style={styles.buttonText}>Cadastrar</Text>
-              </TouchableOpacity>
+              <Animated.View entering={FadeInDown.delay(850).duration(3500).springify()}>
+                <TouchableOpacity style={styles.button} onPress={handleRegisterBook}>
+                  <Text style={styles.buttonText}>Cadastrar</Text>
+                </TouchableOpacity>
+              </Animated.View>
             </Animated.View>
-          </Animated.View>
+          </View>
         </ScrollView>
-      </View>
-    </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
+    </Provider>
   );
 }
