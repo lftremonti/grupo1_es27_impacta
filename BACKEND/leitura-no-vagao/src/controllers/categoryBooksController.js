@@ -23,6 +23,26 @@ const createCategoryBook = async (req, res, next) => {
     }
 };
 
+const linkBookWithCategory = async (req, res, next) => {
+    try {
+        const { livroId, categoryId } = req.body;
+
+        // Verificar campos obrigatórios
+        const erroCampos = validarCamposObrigatorios(req.body, ["livroId", "categoryId"]);
+        if (erroCampos) {
+            return next(new ApiError(400, erroCampos));
+        }
+
+        // Criação do livro no banco de dados
+        const newCategory = await categoryBookModel.linkBookWithCategory({ livroId, categoryId });
+
+        return successResponse(res, 201, 'Vinculado a categoria criada com sucesso!', { category: newCategory });
+    } catch (error) {
+        next(new ApiError(500, 'Erro ao vincular uma categoria ao livro', error.message));
+        console.error(`Error: ${error}`);
+    }
+}
+
 const findByNameCategoryBook = async (req, res, next) => {
     const { nome } = req.params;
     try {
@@ -74,4 +94,4 @@ const getCategoryById = async (req, res, next) => {
     }
 };
 
-module.exports = { createCategoryBook, findByNameCategoryBook, getAllCategory, getCategoryById, getActiveCategoriesWithBooks };
+module.exports = { createCategoryBook, findByNameCategoryBook, getAllCategory, getCategoryById, getActiveCategoriesWithBooks, linkBookWithCategory };
