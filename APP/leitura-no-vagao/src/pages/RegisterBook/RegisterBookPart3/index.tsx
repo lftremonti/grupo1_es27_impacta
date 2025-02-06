@@ -23,6 +23,8 @@ import { Provider } from 'react-native-paper';
 import CustomDialog from '@/components/CustomDialog';
 import { Stations } from '@/types/Stations';
 import { getAllDonationPoint } from '../../../services/StationsService/StationsService';
+import { saveBook } from '@/services/BookService/BookService';
+import { linkBookWithCategory } from '@/services/CategoryService/CategoryService';
 
 type BookRegisterProps = {
   route: RouteProp<RootStackParamList, 'RegisterBookPart3'>;
@@ -128,6 +130,30 @@ export function RegisterBookPart3({ route, navigation }: BookRegisterProps){
 
       console.log(newBookDataInfo);
 
+
+      const bookPayload = {
+        titulo: bookDataInfo.title,
+        autor: bookDataInfo.author,
+        editora: bookDataInfo.publisher,
+        ano_publicacao: bookDataInfo.year,
+        descricao: bookDataInfo.description,
+        ISBN10: '',
+        ISBN13: bookDataInfo.isbn
+      };
+
+      console.log(bookPayload);
+
+      // testar o console log antes 
+      const newBook = await saveBook(bookPayload);
+
+      if (!newBook.ok) throw new Error('Erro ao criar livro');
+
+      const linkPayload = {
+        livroId: newBook.data.book.ad_livros_id,
+        categoryId: bookDataInfo.selectedCategory
+      };
+
+      await linkBookWithCategory(linkPayload);
     } catch (error) {
       showDialog('Erro', `Lamentamos pelo ocorrido. Por favor, tente novamente.`, 'fail');
     } finally {
