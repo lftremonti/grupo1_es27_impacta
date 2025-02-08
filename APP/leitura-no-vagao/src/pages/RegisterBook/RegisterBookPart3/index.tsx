@@ -154,6 +154,8 @@ export function RegisterBookPart3({ route, navigation }: BookRegisterProps){
       };
 
       await linkBookWithCategory(linkPayload);
+
+      //await 
     } catch (error) {
       showDialog('Erro', `Lamentamos pelo ocorrido. Por favor, tente novamente.`, 'fail');
     } finally {
