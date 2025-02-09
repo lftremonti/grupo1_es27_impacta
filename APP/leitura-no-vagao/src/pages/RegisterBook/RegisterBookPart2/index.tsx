@@ -60,12 +60,23 @@ export function RegisterBookPart2({ route, navigation }: BookRegisterProps){
     }
   };
 
+  const populateData = async (bookData: any) => {
+    if(bookData.data.api === 0){
+      setDescription(bookData.data.book.descricao || '');
+      setAuthor(bookData.data.book.autor || '');
+      setPublisher(bookData.data.book.editora || '');
+      setYear(bookData.data.book.ano_publicacao.toString());
+    } else if (bookData.data.api === 1) {
+      setDescription(bookData.data.book.description || bookData.data.book.textSnippet || '');
+      setAuthor(bookData.data.book.authors?.join(', ') || '');
+      setPublisher(bookData.data.book.publisher.publisher || '');
+      setYear(bookData.data.book.publishedDate || '');
+    }
+  }
+
   useEffect(() => {
     if (bookInfo) {
-      setDescription(bookInfo.data.book.description || bookInfo.data.book.textSnippet || '');
-      setAuthor(bookInfo.data.book.authors?.join(', ') || '');
-      setPublisher(bookInfo.data.publisher.publisher || '');
-      setYear(bookInfo.data.book.publishedDate || '');
+      populateData(bookInfo);
     }
 
     fetchCategories();
@@ -139,8 +150,8 @@ export function RegisterBookPart2({ route, navigation }: BookRegisterProps){
         type={dialogType}
       />
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.container}>
-          <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.container}>
             <>
               <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.backButton}>
                 <Ionicons name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
@@ -199,6 +210,8 @@ export function RegisterBookPart2({ route, navigation }: BookRegisterProps){
                       style={[styles.searchInput, styles.input]}
                       value={year}
                       onChangeText={setYear}
+                      keyboardType="numeric"  // Apenas números
+                      maxLength={4}  // Limita a 4 caracteres
                     />
                   </View>
                 </Animated.View>
@@ -241,8 +254,8 @@ export function RegisterBookPart2({ route, navigation }: BookRegisterProps){
                 </Animated.View>
               </Animated.View>
             </>          
-          </ScrollView>
-        </View>
+          </View>
+        </ScrollView>
       </TouchableWithoutFeedback>
     </Provider>
   );

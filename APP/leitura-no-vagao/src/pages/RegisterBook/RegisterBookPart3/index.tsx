@@ -19,12 +19,14 @@ import { RouteProp, useFocusEffect } from '@react-navigation/native';
 import { styles } from './styles';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/routes/app.routes';
-import { Provider } from 'react-native-paper';
+import { ActivityIndicator, Provider } from 'react-native-paper';
 import CustomDialog from '@/components/CustomDialog';
 import { Stations } from '@/types/Stations';
 import { getAllDonationPoint } from '../../../services/StationsService/StationsService';
 import { saveBook } from '@/services/BookService/BookService';
 import { linkBookWithCategory } from '@/services/CategoryService/CategoryService';
+import { donateBook } from '@/services/DonateBookService/DonateBookService';
+import * as SecureStore from 'expo-secure-store';
 
 type BookRegisterProps = {
   route: RouteProp<RootStackParamList, 'RegisterBookPart3'>;
@@ -32,13 +34,13 @@ type BookRegisterProps = {
 };
 
 export function RegisterBookPart3({ route, navigation }: BookRegisterProps){
-  const { bookInfo, bookDataInfo } = route.params;
+  const { bookDataInfo } = route.params;
 
   const [currentLocation, setCurrentLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [stations, setStations] = useState<Stations[]>([]);
   const [selectedStation, setSelectedStation] = useState<number>();
   const [errors, setErrors] = useState({ selectedStation: false });
@@ -54,7 +56,6 @@ export function RegisterBookPart3({ route, navigation }: BookRegisterProps){
     setDialogType(type);
     setVisible(true);
   };
-
 
   useEffect(() => {
     const requestLocationPermission = async () => {
@@ -95,13 +96,23 @@ export function RegisterBookPart3({ route, navigation }: BookRegisterProps){
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         });
-      },
-      (error) => {
+      },(error) => {
         Alert.alert('Erro ao obter localização', error.message);
-        setIsLoading(false);
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
     );
+  };
+
+  //getUserId para retornar o ID do usuário
+  const getUserId = async (): Promise<number | null> => {
+    const storedUserData = await SecureStore.getItemAsync('userData');   
+    if (storedUserData) {
+      const parsedData = JSON.parse(storedUserData);
+      return parsedData.id;
+    }
+  
+    console.warn("No user data found in secure storage");
+    return null;
   };
 
   const handleRegisterBook = async () => {
@@ -122,32 +133,21 @@ export function RegisterBookPart3({ route, navigation }: BookRegisterProps){
     setIsLoading(true);
 
     try {
-
-      const newBookDataInfo = {
-        bookDataInfo,
-        selectedStation
-      };
-
-      console.log(newBookDataInfo);
-
+      const usuarioId = await getUserId();
 
       const bookPayload = {
-        titulo: bookDataInfo.title,
+        titulo: bookDataInfo.bookDataInfo.title,
         autor: bookDataInfo.author,
         editora: bookDataInfo.publisher,
         ano_publicacao: bookDataInfo.year,
         descricao: bookDataInfo.description,
         ISBN10: '',
-        ISBN13: bookDataInfo.isbn
+        ISBN13: bookDataInfo.bookDataInfo.isbn,
+        images: bookDataInfo.bookDataInfo.images
       };
 
-      console.log(bookPayload);
-
-      // testar o console log antes 
       const newBook = await saveBook(bookPayload);
-
-      if (!newBook.ok) throw new Error('Erro ao criar livro');
-
+      
       const linkPayload = {
         livroId: newBook.data.book.ad_livros_id,
         categoryId: bookDataInfo.selectedCategory
@@ -155,9 +155,21 @@ export function RegisterBookPart3({ route, navigation }: BookRegisterProps){
 
       await linkBookWithCategory(linkPayload);
 
-      //await 
+      if(selectedStation != null && usuarioId != null) {
+        const donatebook = {
+          isbn: bookDataInfo.bookDataInfo.isbn,
+          pontoDeDoacaoId: selectedStation,
+          usuarioId: usuarioId
+        }
+  
+        const donate = await donateBook(donatebook);
+        if(donate.status == 201){
+          showDialog("Sucesso", "Doação registrada com sucesso!", 'success');
+        }
+      }
     } catch (error) {
       showDialog('Erro', `Lamentamos pelo ocorrido. Por favor, tente novamente.`, 'fail');
+      console.log(Error)
     } finally {
       setIsLoading(false);
     }
@@ -282,7 +294,11 @@ export function RegisterBookPart3({ route, navigation }: BookRegisterProps){
 
               <Animated.View entering={FadeInDown.delay(850).duration(3500).springify()}>
                 <TouchableOpacity style={styles.button} onPress={handleRegisterBook}>
+                {isLoading ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : ( 
                   <Text style={styles.buttonText}>Cadastrar</Text>
+                )}
                 </TouchableOpacity>
               </Animated.View>
             </Animated.View>

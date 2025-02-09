@@ -58,15 +58,19 @@ export async function getAllCategoryCreateBookService() {
 
 export async function linkBookWithCategory(linkPayload: BookWithCategory) {
     try {
+        const token = await SecureStorage.getItemAsync('userToken');
+        
         // Define os headers dinamicamente com base no token
         const headers: HeadersInit = {
           'Content-Type': 'application/json',
+          // Durante o desenvolvimento, use a chave de bypass
+          'Authorization': `Bearer ${token || process.env.BYPASS_TOKEN_KEY}`,
         };
     
         const response = await fetch(`${config.BASE_URL}/api/categoryBooks/linkBookWithCategory`, {
           method: 'POST',
           headers: headers,
-          body: JSON.stringify(linkPayload), // Envia os dados do usuário
+          body: JSON.stringify(linkPayload),
         });
     
         if (!response.ok) {
@@ -75,9 +79,9 @@ export async function linkBookWithCategory(linkPayload: BookWithCategory) {
         }
     
         const result = await response.json();
-        return result; // Retorna a resposta do servidor
+        return result;
     } catch (error) {
-        console.error(`Error ao salvar o livro no banco: ${config.BASE_URL}`, error);
+        console.error(`Error ao vincular o livro no banco com sua categoria: ${config.BASE_URL}`, error);
         throw new Error('Error ao salvar o livro no banco.');
     }
 }

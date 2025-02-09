@@ -227,9 +227,12 @@ export async function getFavoriteBookService(limit: number, offset: number, id: 
 export async function saveBook(book: BookCreate) {
   try {
 
+    const token = await SecureStorage.getItemAsync('userToken');
+    
     // Define os headers dinamicamente com base no token
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token || process.env.BYPASS_TOKEN_KEY}`,
     };
 
     const response = await fetch(`${config.BASE_URL}/api/books/create`, {
@@ -244,7 +247,7 @@ export async function saveBook(book: BookCreate) {
     }
 
     const result = await response.json();
-    return result; // Retorna a resposta do servidor
+    return result;
   } catch (error) {
     console.error(`Error ao salvar o livro no banco: ${config.BASE_URL}`, error);
     throw new Error('Error ao salvar o livro no banco.');

@@ -173,8 +173,9 @@ export function RegisterBookPart1() {
 
     try{
       const bookData = await getBookByISBN(isbn);
+      console.log(bookData)
       if (bookData) {
-        setTitle(bookData.data.book.title); // Preencher o campo "title"
+        populateData(bookData);
         setBookInfo(bookData); // Salvar todas as informações do livro
         showDialog('Sucesso', 'Informações do livro obtidas com sucesso!', 'success');
       } else {
@@ -185,7 +186,15 @@ export function RegisterBookPart1() {
       showDialog('Erro', `Lamentamos pelo ocorrido. Por favor, tente novamente.`, 'fail');
       console.log("Metodo handleSearchIsbn ERROR: " + errorMessage)
     } finally {
-      setIsLoading(false);
+      setIsLoadingIsbn(false);
+    }
+  }
+
+  const populateData = async (bookData: any) => {
+    if(bookData.data.api === 0){
+      setTitle(bookData.data.book.titulo);
+    } else if (bookData.data.api === 1) {
+      setTitle(bookData.data.book.title);
     }
   }
 
@@ -213,7 +222,7 @@ export function RegisterBookPart1() {
         isbn,
         title,
         images
-      };
+      };    
       navigation.navigate('RegisterBookPart2' as any, { bookInfo, bookDataInfo: newBookDataInfo });
     } catch (error) {
       showDialog('Erro', `Lamentamos pelo ocorrido. Por favor, tente novamente.`, 'fail');
@@ -237,113 +246,115 @@ export function RegisterBookPart1() {
         type={dialogType}
       />
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.container}>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {scanned ? (
-              <CameraView style={styles.camera} onBarcodeScanned={handleBarCodeScanned}>
-                <View style={styles.buttonContainer}>
-                  <TouchableOpacity style={styles.button} onPress={closeCamera}>
-                    <Text style={styles.text}>Fechar Câmera</Text>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.container}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {scanned ? (
+                <CameraView style={styles.camera} onBarcodeScanned={handleBarCodeScanned}>
+                  <View style={styles.buttonContainer}>
+                    <TouchableOpacity style={styles.button} onPress={closeCamera}>
+                      <Text style={styles.text}>Fechar Câmera</Text>
+                    </TouchableOpacity>
+                  </View>
+                </CameraView>
+              ) : (
+                <>
+                  <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.backButton}>
+                    <Ionicons name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
                   </TouchableOpacity>
-                </View>
-              </CameraView>
-            ) : (
-              <>
-                <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.backButton}>
-                  <Ionicons name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
-                </TouchableOpacity>
 
-                <Animated.View entering={FadeInDown.delay(200).duration(3500).springify()}>
-                  <Text style={styles.welcome}>Doe um livro</Text>
-                  <Text style={styles.instructions}>
-                    Compartilhe o conhecimento e inspire outras pessoas! Doe seus livros e transforme vidas através da leitura.
-                  </Text>
+                  <Animated.View entering={FadeInDown.delay(200).duration(3500).springify()}>
+                    <Text style={styles.welcome}>Doe um livro</Text>
+                    <Text style={styles.instructions}>
+                      Compartilhe o conhecimento e inspire outras pessoas! Doe seus livros e transforme vidas através da leitura.
+                    </Text>
 
-                  <Text style={styles.instructions}>
-                    Preencha todos os dados.
-                  </Text>
+                    <Text style={styles.instructions}>
+                      Preencha todos os dados.
+                    </Text>
 
-                  <Animated.View entering={FadeInDown.delay(450).duration(3500).springify()}>
-                    <Text style={styles.label}>Adicionar fotos do livro</Text>
-                    <View style={styles.viewInputImage}>
-                      <FlatList
-                        data={images.length > 0 ? images : [{ uri: 'placeholder', base64: null }]} // Corrigido
-                        renderItem={renderImage}
-                        keyExtractor={(item, index) => `image-${index}`}
-                        horizontal
-                        pagingEnabled
-                        snapToAlignment="center"
-                        snapToInterval={screenWidth}
-                        showsHorizontalScrollIndicator={false}
-                        onMomentumScrollEnd={(event) => {
-                          const index = Math.floor(event.nativeEvent.contentOffset.x / screenWidth);
-                          setCurrentIndex(index);
-                        }}
-                      />
-                    </View>
-                  </Animated.View>
+                    <Animated.View entering={FadeInDown.delay(450).duration(3500).springify()}>
+                      <Text style={styles.label}>Adicionar fotos do livro</Text>
+                      <View style={styles.viewInputImage}>
+                        <FlatList
+                          data={images.length > 0 ? images : [{ uri: 'placeholder', base64: null }]} // Corrigido
+                          renderItem={renderImage}
+                          keyExtractor={(item, index) => `image-${index}`}
+                          horizontal
+                          pagingEnabled
+                          snapToAlignment="center"
+                          snapToInterval={screenWidth}
+                          showsHorizontalScrollIndicator={false}
+                          onMomentumScrollEnd={(event) => {
+                            const index = Math.floor(event.nativeEvent.contentOffset.x / screenWidth);
+                            setCurrentIndex(index);
+                          }}
+                        />
+                      </View>
+                    </Animated.View>
 
-                  <Text style={styles.instructions}>
-                  Preencha o ISBN no campo para que a gente complete os outros campos automaticamente. Ou, se preferir, use a câmera do celular para escanear o código ISBN do livro e deixe que a gente preencha tudo pra você!
-                  </Text>
+                    <Text style={styles.instructions}>
+                    Preencha o ISBN no campo para que a gente complete os outros campos automaticamente. Ou, se preferir, use a câmera do celular para escanear o código ISBN do livro e deixe que a gente preencha tudo pra você!
+                    </Text>
 
-                  <Animated.View entering={FadeInDown.delay(650).duration(3500).springify()}>
-                    <Text style={styles.label}>ISBN do livro</Text>
-                    <View style={[styles.viewInput, errors.isbn && { borderColor: 'red', borderWidth: 1 }]}>
-                      <TextInput
-                        placeholder="Informe o codigo ISBN do livro"
-                        style={[styles.searchInput, styles.input]}
-                        value={isbn}
-                        onChangeText={setIsbn}
-                      />
+                    <Animated.View entering={FadeInDown.delay(650).duration(3500).springify()}>
+                      <Text style={styles.label}>ISBN do livro</Text>
+                      <View style={[styles.viewInput, errors.isbn && { borderColor: 'red', borderWidth: 1 }]}>
+                        <TextInput
+                          placeholder="Informe o codigo ISBN do livro"
+                          style={[styles.searchInput, styles.input]}
+                          value={isbn}
+                          onChangeText={setIsbn}
+                        />
+                        {isLoadingIsbn ? (
+                          <TouchableOpacity>
+                            <ActivityIndicator size="large" color="#252525" />
+                        </TouchableOpacity>
+                        ): (
+                          <TouchableOpacity onPress={handleSearchIsbn}>
+                            <Ionicons name="search" size={24} style={styles.searchIcon} />
+                          </TouchableOpacity>
+                        )}
+                        <TouchableOpacity onPress={() => setScanned(true)}>
+                          <Ionicons name="camera" size={24} style={styles.searchIcon} />
+                        </TouchableOpacity>
+                      </View>
+                    </Animated.View>
+
+                    <Animated.View entering={FadeInDown.delay(850).duration(3500).springify()}>
+                      <Text style={styles.label}>Titulo do livro</Text>
+                      <View style={[styles.viewInput, errors.title && { borderColor: 'red', borderWidth: 1 }]}>
+                        <TextInput
+                          placeholder="Informe o titulo do livro"
+                          style={[styles.searchInput, styles.input]}
+                          value={title}
+                          onChangeText={setTitle}
+                        />
+                      </View>
+                    </Animated.View>
+
+                    <Animated.View entering={FadeInDown.delay(1050).duration(3500).springify()}>
                       {isLoading ? (
-                        <TouchableOpacity>
+                        <TouchableOpacity style={styles.button}>
                           <ActivityIndicator size="large" color="#FFFFFF" />
-                      </TouchableOpacity>
-                      ): (
-                        <TouchableOpacity onPress={handleSearchIsbn}>
-                          <Ionicons name="search" size={24} style={styles.searchIcon} />
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity 
+                          style={styles.button} 
+                          onPress={handleNext}
+                        >
+                          <Text style={styles.buttonText}>Proximo</Text>
                         </TouchableOpacity>
                       )}
-                      <TouchableOpacity onPress={() => setScanned(true)}>
-                        <Ionicons name="camera" size={24} style={styles.searchIcon} />
-                      </TouchableOpacity>
-                    </View>
-                  </Animated.View>
+                    </Animated.View>
 
-                  <Animated.View entering={FadeInDown.delay(850).duration(3500).springify()}>
-                    <Text style={styles.label}>Titulo do livro</Text>
-                    <View style={[styles.viewInput, errors.title && { borderColor: 'red', borderWidth: 1 }]}>
-                      <TextInput
-                        placeholder="Informe o titulo do livro"
-                        style={[styles.searchInput, styles.input]}
-                        value={title}
-                        onChangeText={setTitle}
-                      />
-                    </View>
                   </Animated.View>
-
-                  <Animated.View entering={FadeInDown.delay(1050).duration(3500).springify()}>
-                    {isLoading ? (
-                      <TouchableOpacity style={styles.button}>
-                        <ActivityIndicator size="large" color="#FFFFFF" />
-                      </TouchableOpacity>
-                    ) : (
-                      <TouchableOpacity 
-                        style={styles.button} 
-                        onPress={handleNext}
-                      >
-                        <Text style={styles.buttonText}>Proximo</Text>
-                      </TouchableOpacity>
-                    )}
-                  </Animated.View>
-
-                </Animated.View>
-              </>
-            )}
-          
-          </ScrollView>
-        </View>
+                </>
+              )}
+            
+            </ScrollView>
+          </View>
+        </ScrollView>
       </TouchableWithoutFeedback>
     </Provider>
   );
