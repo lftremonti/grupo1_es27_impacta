@@ -301,6 +301,20 @@ const findFavoriteBooks = async (limit, offset, id) => {
     }
 };
 
+
+const addImages = async (images) => {
+    try {
+        const query = `INSERT INTO ${process.env.DB_SCHEMA}.Imagem (is_default, nome, URLImagem, ImagemBase64) 
+                        VALUES ($1, $2, $3, $4) RETURNING *`;
+        const values = [book.titulo, book.autor, book.editora, book.ano_publicacao, book.descricao, book.ISBN10, book.ISBN13];
+        const result = await pool.query(query, values);
+        return result.rows[0];
+    } catch (error) {
+        console.error('Error creating book:', error);
+        throw error;
+    }
+};
+
 module.exports = { createBook, updateBook, getBookByISBN, findById, 
     findAllBooks, deleteBookById, getFeaturedBooks, getTopRatedBooks, 
     getRecommendedBooks, getNewArrivals, findBookImageById, findFavoriteBooks, getBookByISBNExist};

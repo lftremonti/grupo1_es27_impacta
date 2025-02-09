@@ -21,6 +21,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+//Verificar quais requisições to recebendo
+app.use((req, res, next) => {
+    console.log(`🔹 Requisição recebida: ${req.method} ${req.url}`);
+    console.log("🔹 Body recebido:", req.body);
+    next();
+});
+
 //Rotas
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);

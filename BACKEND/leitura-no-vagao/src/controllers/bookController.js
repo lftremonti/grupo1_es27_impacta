@@ -8,8 +8,8 @@ const { successResponse } = require('../utils/ApiResponse');
 /**Cria Livros */
 const createBook = async (req, res, next) => {
     try {
-        const { titulo, autor, editora, ano_publicacao, descricao, ISBN10, ISBN13 } = req.body;
-
+        const { titulo, autor, editora, ano_publicacao, descricao, ISBN10, ISBN13, images } = req.body;
+        console.log("Na api")
         const bookExists = await bookModel.getBookByISBNExist(ISBN13);
         if(bookExists){
             const bookData = await bookModel.getBookByISBN(ISBN13);
@@ -24,6 +24,11 @@ const createBook = async (req, res, next) => {
 
         // Criação do livro no banco de dados
         const newBook = await bookModel.createBook({ titulo, autor, editora, ano_publicacao, descricao, ISBN10, ISBN13 });
+
+        if(images != null){
+            console.log(images);
+            //const images = await bookModel.addImages(images);
+        }
 
         return successResponse(res, 201, 'Livro criado com sucesso!', { book: newBook });
     } catch (err) {
