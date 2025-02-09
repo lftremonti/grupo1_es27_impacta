@@ -226,12 +226,13 @@ export async function getFavoriteBookService(limit: number, offset: number, id: 
 // Criar o livro
 export async function saveBook(book: BookCreate) {
   try {
-
+    console.log("Entrou no metodo do front para chamar a api")
     const token = await SecureStorage.getItemAsync('userToken');
     
     // Define os headers dinamicamente com base no token
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
       'Authorization': `Bearer ${token || process.env.BYPASS_TOKEN_KEY}`,
     };
 
@@ -241,12 +242,15 @@ export async function saveBook(book: BookCreate) {
       body: JSON.stringify(book), // Envia os dados do usuário
     });
 
+    console.log("response: ", response)
+    
     if (!response.ok) {
       console.error(`Error: ${response.statusText}`)
       throw new Error(`Error: ${response.statusText}`);
     }
 
     const result = await response.json();
+    console.log("Opa: ", result)
     return result;
   } catch (error) {
     console.error(`Error ao salvar o livro no banco: ${config.BASE_URL}`, error);

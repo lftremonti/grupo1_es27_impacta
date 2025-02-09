@@ -116,14 +116,11 @@ export function RegisterBookPart3({ route, navigation }: BookRegisterProps){
   };
 
   const handleRegisterBook = async () => {
-    // Resetar erros
     setErrors({ selectedStation: false });
-    // Verifica se os campos estão vazios
     const newErrors = {
       selectedStation: !selectedStation,
     };
   
-    // Mostrar a caixa de erro pedindo que o usuário não preencheu todos os campos
     if (newErrors.selectedStation) {
       setErrors(newErrors);
       showDialog('Campos Obrigatórios', 'Por favor, preencha todos os campos!', 'fail');

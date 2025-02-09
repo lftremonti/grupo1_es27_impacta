@@ -173,7 +173,6 @@ export function RegisterBookPart1() {
 
     try{
       const bookData = await getBookByISBN(isbn);
-      console.log(bookData)
       if (bookData) {
         populateData(bookData);
         setBookInfo(bookData); // Salvar todas as informações do livro

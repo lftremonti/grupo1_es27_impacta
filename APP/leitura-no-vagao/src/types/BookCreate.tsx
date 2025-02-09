@@ -5,5 +5,6 @@ export interface BookCreate {
     ano_publicacao: string, 
     descricao: string, 
     ISBN10: string, 
-    ISBN13: string
+    ISBN13: string,
+    images: string
 }
