@@ -2,7 +2,7 @@ const pool = require('../config/db');
 
 const createDonation = async ({ isbn, pontoDeDoacaoId, usuarioId, quantidade }) => {
     const query = `
-        INSERT INTO Doacoes (isbn, pontoDeDoacaoID, usuarioID, quantidade)
+        INSERT INTO ${process.env.DB_SCHEMA}.Doacoes (isbn, pontoDeDoacaoID, usuarioID, quantidade)
         VALUES ($1, $2, $3, $4)
         RETURNING *;
     `;

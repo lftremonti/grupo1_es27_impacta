@@ -27,6 +27,11 @@ const linkBookWithCategory = async (req, res, next) => {
     try {
         const { livroId, categoryId } = req.body;
 
+        const linkBookWithCategoryExists = categoryBookModel.linkBookWithCategoryExists(livroId, categoryId);
+        if(linkBookWithCategoryExists){
+            return successResponse(res, 200, 'vinculo já existe!');
+        }
+
         // Verificar campos obrigatórios
         const erroCampos = validarCamposObrigatorios(req.body, ["livroId", "categoryId"]);
         if (erroCampos) {

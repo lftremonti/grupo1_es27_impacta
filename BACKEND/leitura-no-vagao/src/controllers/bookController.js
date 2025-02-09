@@ -10,8 +10,14 @@ const createBook = async (req, res, next) => {
     try {
         const { titulo, autor, editora, ano_publicacao, descricao, ISBN10, ISBN13 } = req.body;
 
+        const bookExists = await bookModel.getBookByISBNExist(ISBN13);
+        if(bookExists){
+            const bookData = await bookModel.getBookByISBN(ISBN13);
+            return successResponse(res, 200, 'Livro Já existe!', { book: bookData });
+        }
+
         // Verificar campos obrigatórios
-        const erroCampos = validarCamposObrigatorios(req.body, ["titulo", "ISBN10", "ISBN13"]);
+        const erroCampos = validarCamposObrigatorios(req.body, ["titulo", "ISBN13"]);
         if (erroCampos) {
             return next(new ApiError(400, erroCampos));
         }
@@ -22,6 +28,7 @@ const createBook = async (req, res, next) => {
         return successResponse(res, 201, 'Livro criado com sucesso!', { book: newBook });
     } catch (err) {
         next(new ApiError(500, 'Erro ao criar o livro', err.message));
+        console.log("Error ao criar um livro: ", err)
     }
 };
 
@@ -123,16 +130,21 @@ const getBookByIsbnCreate = async (req, res, next) => {
         const bookFromDb = await bookModel.getBookByISBN(isbn);
         
         if (bookFromDb) {
-            return successResponse(res, 200, 'Livro encontrado no banco de dados!', { book: bookFromDb });
+            return successResponse(res, 200, 'Livro encontrado no banco de dados!', { book: bookFromDb, api: 0 });
         }
         
         // 2. Se não encontrado, tenta na primeira API externa
         try {
             const bookFromApi1 = await getBookByISBNGoogleBooks(isbn);
-            const transformedBook = transformBookResponse(bookFromApi1);
-            console.log("Teste:", transformedBook)
-            const publisher = await getPublisherFromGoogleBooks(transformedBook.previewLink);
-            return successResponse(res, 200, 'Livro encontrado na primeira API!', { book: transformedBook, publisher });
+            const dataBook = transformBookResponse(bookFromApi1);
+            const publisher = await getPublisherFromGoogleBooks(dataBook.previewLink);
+            
+            // Se publisher não for null, adiciona ao dataBook
+            if (publisher) {
+                dataBook.publisher = publisher;
+            }
+
+            return successResponse(res, 200, 'Livro encontrado na primeira API!', { book: dataBook, api: 1 });
         } catch (error) {
             console.error('Erro ao buscar na primeira API:', error.message);
         }

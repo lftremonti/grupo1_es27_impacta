@@ -27,6 +27,22 @@ const linkBookWithCategory = async (livroId, categoryId) => {
     }
 }
 
+const linkBookWithCategoryExists = async (livroId, categoryId) => {
+    try {
+        const query = `SELECT EXISTS (
+            SELECT 1 
+            FROM ${process.env.DB_SCHEMA}.LivroCategorias 
+            WHERE LivroID = $1 AND CategoriaID = $2
+            ) AS exists`;
+        const values = [livroId, categoryId];
+        const result = await pool.query(query, values);
+        return result.rows[0].exists;
+    } catch (error) {
+        console.error('Error linking a book to a category:', error);
+        throw error;
+    }
+}
+
 // Buscar categoria pelo nome
 const findByNameCategoryBook = async (nome) => {
     try {
@@ -82,4 +98,4 @@ const findCategoryById = async (id) => {
     }
 };
 
-module.exports = { createCategoryBook, findByNameCategoryBook, findAllCategory, findCategoryById, getActiveCategoriesWithBooks, linkBookWithCategory };
+module.exports = { createCategoryBook, findByNameCategoryBook, findAllCategory, findCategoryById, getActiveCategoriesWithBooks, linkBookWithCategory, linkBookWithCategoryExists };

@@ -79,6 +79,21 @@ const deleteBookById = async (id) => {
 };
 
 // Função para buscar um livro pelo ISBN10 ou ISBN13 no banco de dados
+const getBookByISBNExist = async (isbn) => {
+    try {
+        const query = `SELECT EXISTS (
+            SELECT 1 FROM ${process.env.DB_SCHEMA}.Livros 
+            WHERE ISBN10 = $1 OR ISBN13 = $1
+        ) AS exist`;
+        const result = await pool.query(query, [isbn]);
+        return result.rows[0].exist; // Retorna o livro encontrado ou undefined
+    } catch (error) {
+        console.error('Erro ao buscar livro no banco de dados:', error);
+        throw error;
+    }
+};
+
+// Função para buscar um livro pelo ISBN10 ou ISBN13 no banco de dados
 const getBookByISBN = async (isbn) => {
     try {
         const query = `SELECT * FROM ${process.env.DB_SCHEMA}.Livros WHERE ISBN10 = $1 OR ISBN13 = $1`;
@@ -288,4 +303,4 @@ const findFavoriteBooks = async (limit, offset, id) => {
 
 module.exports = { createBook, updateBook, getBookByISBN, findById, 
     findAllBooks, deleteBookById, getFeaturedBooks, getTopRatedBooks, 
-    getRecommendedBooks, getNewArrivals, findBookImageById, findFavoriteBooks};
+    getRecommendedBooks, getNewArrivals, findBookImageById, findFavoriteBooks, getBookByISBNExist};
