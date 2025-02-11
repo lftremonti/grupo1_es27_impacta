@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { createBook, updateBook, getBookById, getBookByIsbn, getAllBooks, 
     getFeaturedBooks, getTopRatedBooks, getRecommendedBooks, getNewArrivals, findFavoriteBooks,
-    getBookByIsbnCreate } = require('../controllers/bookController');
+    getBookByIsbnCreate, 
+    getAllBooksAll} = require('../controllers/bookController');
 const { authMiddleware } = require('../middlewares/authMiddleware');
 
 // Criar um novo livro
@@ -31,6 +32,9 @@ router.get('/new-arrivals', authMiddleware, getNewArrivals);
 
 // Buscar todos os livros
 router.get('/', authMiddleware, getAllBooks);
+
+// Buscar todos os livros sem limites
+router.get('/getAllBookAll', authMiddleware, getAllBooksAll);
 
 // Buscar um livro pelo ID
 router.get('/:id', authMiddleware, getBookById);

@@ -19,12 +19,12 @@ const errorHandler = require('./middlewares/errorHandler');
 // Configura o aplicativo para utilizar CORS, permitindo que outros domínios acessem sua API.
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '100mb' })); // Permite até 10MB no JSON
 
 //Verificar quais requisições to recebendo
 app.use((req, res, next) => {
     console.log(`🔹 Requisição recebida: ${req.method} ${req.url}`);
-    console.log("🔹 Body recebido:", req.body);
+    //console.log("🔹 Body recebido:", req.body);
     next();
 });
 

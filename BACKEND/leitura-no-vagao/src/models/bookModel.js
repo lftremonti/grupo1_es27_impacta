@@ -18,8 +18,8 @@ const createBook = async (book) => {
 const updateBook = async (id, book) => {
     try {
         const query = `UPDATE ${process.env.DB_SCHEMA}.Livros 
-                       SET title = $1, author = $2, published_date = $3, genre = $4 
-                       WHERE book_id = $5 RETURNING *`;
+            SET title = $1, author = $2, published_date = $3, genre = $4 
+            WHERE book_id = $5 RETURNING *`;
         const values = [book.title, book.author, book.publishedDate, book.genre, id];
         const result = await pool.query(query, values);
         return result.rows[0];
@@ -60,6 +60,25 @@ const findAllBooks = async (limit, offset, categoryId) => {
         }
 
         const result = await pool.query(query, params);
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching books:', error);
+        throw error;
+    }
+};
+
+// Buscar todos os livros sem limite
+const findAllBooksAll = async () => {
+    try {
+        const query = `
+            SELECT L.*, I.URLImagem AS imagem_url, I.ImagemBase64 AS imagem_base64
+            FROM ${process.env.DB_SCHEMA}.Livros L
+            LEFT JOIN ${process.env.DB_SCHEMA}.LivroImagens LI ON L.ad_livros_id = LI.LivroID
+            LEFT JOIN ${process.env.DB_SCHEMA}.Imagem I ON LI.ImagemID = I.ad_imagem_id
+            WHERE L.ativo = 'Y' AND i.is_default = TRUE
+        `;
+    
+        const result = await pool.query(query);
         return result.rows;
     } catch (error) {
         console.error('Error fetching books:', error);
@@ -301,20 +320,42 @@ const findFavoriteBooks = async (limit, offset, id) => {
     }
 };
 
-
-const addImages = async (images) => {
+//Salvar a imagem no banco de dados
+const addImages = async ({ nome, URLImagem, ImagemBase64, is_default }) => {
     try {
-        const query = `INSERT INTO ${process.env.DB_SCHEMA}.Imagem (is_default, nome, URLImagem, ImagemBase64) 
-                        VALUES ($1, $2, $3, $4) RETURNING *`;
-        const values = [book.titulo, book.autor, book.editora, book.ano_publicacao, book.descricao, book.ISBN10, book.ISBN13];
-        const result = await pool.query(query, values);
+        // Inserir os dados na tabela Imagem
+        const query = `
+            INSERT INTO ${process.env.DB_SCHEMA}.Imagem(nome, URLImagem, ImagemBase64, is_default) 
+            VALUES ($1, $2, $3, $4) 
+            RETURNING ad_imagem_id;
+        `;
+
+        const result = await pool.query(query, [nome, URLImagem, ImagemBase64, is_default]);
         return result.rows[0];
     } catch (error) {
-        console.error('Error creating book:', error);
-        throw error;
+        console.error("Erro ao salvar imagem:", error);
+        throw new Error("Erro ao salvar imagem no banco");
+    }
+};
+
+//Vincular a imagem a livro
+const linkImageToBook = async (livroId, imagemId) => {
+    try {
+        const query = `
+            INSERT INTO ${process.env.DB_SCHEMA}.LivroImagens (LivroID, ImagemID) 
+            VALUES ($1, $2);
+        `;
+
+        await pool.query(query, [livroId, imagemId]);
+    } catch (error) {
+        console.error("Erro ao vincular imagem ao livro:", error);
+        throw new Error("Erro ao vincular imagem ao livro");
     }
 };
 
 module.exports = { createBook, updateBook, getBookByISBN, findById, 
     findAllBooks, deleteBookById, getFeaturedBooks, getTopRatedBooks, 
-    getRecommendedBooks, getNewArrivals, findBookImageById, findFavoriteBooks, getBookByISBNExist};
+    getRecommendedBooks, getNewArrivals, findBookImageById, 
+    findFavoriteBooks, getBookByISBNExist, addImages,
+    linkImageToBook, findAllBooksAll
+};

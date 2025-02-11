@@ -80,4 +80,6 @@ const getFavoritedStatus = async (usuarioid, livroid) => {
     }
 };
 
-module.exports = { createFavoriteBook, isBookFavorited, inactiveBookFavorited, activeBookFavorited, getFavoritedStatus };
+module.exports = { createFavoriteBook, isBookFavorited, inactiveBookFavorited, 
+    activeBookFavorited, getFavoritedStatus 
+};

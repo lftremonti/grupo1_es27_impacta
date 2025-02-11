@@ -47,7 +47,8 @@ const getBookByISBNGoogleBooks = async (isbn) => {
 const getPublisherFromGoogleBooks = async (bookUrl) => {
     try {
         if (!bookUrl || !bookUrl.startsWith("http")) {
-            throw new Error("URL inválida fornecida.");
+            console.warn("URL inválida fornecida.");
+            return { publisher: null };
         }
 
         // Fazendo o request para a página do livro
@@ -63,7 +64,8 @@ const getPublisherFromGoogleBooks = async (bookUrl) => {
         // Procurar pelo link do BiBTeX
         const bibtexLink = $("a").filter((_, el) => $(el).text().includes("BiBTeX")).attr("href");
         if (!bibtexLink) {
-            throw new Error("Link para download do BiBTeX não encontrado.");
+            console.warn("Link para download do BiBTeX não encontrado.");
+            return { publisher: null };
         }
 
         // Fazer o download do arquivo BiBTeX

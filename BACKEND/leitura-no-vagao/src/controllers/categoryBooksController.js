@@ -3,6 +3,7 @@ const { validarCamposObrigatorios } = require('../utils/validationUtils');
 const ApiError = require('../utils/ApiError');
 const { successResponse } = require('../utils/ApiResponse');
 
+//Criar a categoria
 const createCategoryBook = async (req, res, next) => {
     try {
         const { nome, descricao } = req.body;
@@ -26,9 +27,11 @@ const createCategoryBook = async (req, res, next) => {
 const linkBookWithCategory = async (req, res, next) => {
     try {
         const { livroId, categoryId } = req.body;
+        console.log("Entro na api de vinculo")
 
         const linkBookWithCategoryExists = categoryBookModel.linkBookWithCategoryExists(livroId, categoryId);
-        if(linkBookWithCategoryExists){
+        if(linkBookWithCategoryExists === true){
+            console.log("entrou no if")
             return successResponse(res, 200, 'vinculo já existe!');
         }
 
@@ -39,8 +42,8 @@ const linkBookWithCategory = async (req, res, next) => {
         }
 
         // Criação do livro no banco de dados
-        const newCategory = await categoryBookModel.linkBookWithCategory({ livroId, categoryId });
-
+        const newCategory = await categoryBookModel.linkBookWithCategory(livroId, categoryId);
+        console.log("newCategory: ", newCategory)
         return successResponse(res, 201, 'Vinculado a categoria criada com sucesso!', { category: newCategory });
     } catch (error) {
         next(new ApiError(500, 'Erro ao vincular uma categoria ao livro', error.message));
@@ -48,6 +51,7 @@ const linkBookWithCategory = async (req, res, next) => {
     }
 }
 
+//Busca a categoria pelo nome
 const findByNameCategoryBook = async (req, res, next) => {
     const { nome } = req.params;
     try {
@@ -64,6 +68,7 @@ const findByNameCategoryBook = async (req, res, next) => {
     }
 };
 
+//Busca todas as categorias
 const getAllCategory = async (req, res, next) => {
     try {
         const category = await categoryBookModel.findAllCategory();
@@ -74,6 +79,7 @@ const getAllCategory = async (req, res, next) => {
     }
 };
 
+//Busca todas as categorias ativas
 const getActiveCategoriesWithBooks = async (req, res, next) => {
     try {
         const category = await categoryBookModel.getActiveCategoriesWithBooks();
@@ -84,6 +90,7 @@ const getActiveCategoriesWithBooks = async (req, res, next) => {
     }
 };
 
+//Busca as categorias pela id
 const getCategoryById = async (req, res, next) => {
     const { id } = req.params;
     try {
