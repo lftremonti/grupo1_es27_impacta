@@ -4,19 +4,23 @@ import * as SecureStore from 'expo-secure-store'; // Não se esqueça de importa
 import CustomDrawer from '../components/CustomDrawer';
 import { Home } from '../pages/Home';
 import { BookDetails } from '../pages/BookDetails';
-import { RegisterBook } from '../pages/RegisterBook';
+import { RegisterBookPart1 } from '../pages/RegisterBook/RegisterBookPart1';
 import CommentsBook from '../pages/CommentsBook';
 import { Favorite } from '../pages/favorite';
 import { Profile } from '../pages/Profile';
 import { Book } from '../types/Book';
 import { User } from '../types/User';
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { RegisterBookPart2 } from '@/pages/RegisterBook/RegisterBookPart2';
+import { RegisterBookPart3 } from '@/pages/RegisterBook/RegisterBookPart3';
 
 // Definir o tipo de parâmetros para o BookDetails
 export type RootStackParamList = {
   Home: undefined;
   BookDetails: { book: Book };
   RegisterBook: undefined;
+  RegisterBookPart2: { bookInfo: any, bookDataInfo: any };
+  RegisterBookPart3: { bookInfo: any, bookDataInfo: any };
   CommentsBook: { reviews: Array<any>; averageRating: any; book: Book };
   Profile: { user: User};
   Favorite: { user: User};
@@ -78,12 +82,28 @@ export function AppRoutes() {
 
       <Drawer.Screen 
         name="RegisterBook" 
-        component={RegisterBook} 
+        component={RegisterBookPart1} 
         options={{
           title: 'Doar Livro',
           drawerIcon: ({ color, size }) => (
             <Ionicons name="book-outline" size={size} color={color} />
           ),
+        }}
+      />
+
+      <Drawer.Screen 
+        name="RegisterBookPart2" 
+        component={RegisterBookPart2} 
+        options={{
+          drawerItemStyle: { display: 'none' },
+        }}
+      />
+
+      <Drawer.Screen 
+        name="RegisterBookPart3" 
+        component={RegisterBookPart3} 
+        options={{
+          drawerItemStyle: { display: 'none' },
         }}
       />
 

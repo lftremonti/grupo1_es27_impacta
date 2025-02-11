@@ -203,7 +203,7 @@ export const styles = StyleSheet.create({
         borderRadius: 8,
         padding: 10,
         marginBottom: 15,
-        textAlignVertical: 'top', // ensures text starts at the top of the box
+        textAlignVertical: 'top',
         fontSize: 16,
         color: '#333',
     },

@@ -89,7 +89,6 @@ const updatePasswordById = async (userid, newPassword) => {
     }
 }
 
-
 // Exemplo de implementação de getUserByGoogleId
 const getUserByGoogleId = async (idAuthGoogle) => {
     try {

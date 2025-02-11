@@ -18,8 +18,8 @@ const createBook = async (book) => {
 const updateBook = async (id, book) => {
     try {
         const query = `UPDATE ${process.env.DB_SCHEMA}.Livros 
-                       SET title = $1, author = $2, published_date = $3, genre = $4 
-                       WHERE book_id = $5 RETURNING *`;
+            SET title = $1, author = $2, published_date = $3, genre = $4 
+            WHERE book_id = $5 RETURNING *`;
         const values = [book.title, book.author, book.publishedDate, book.genre, id];
         const result = await pool.query(query, values);
         return result.rows[0];
@@ -67,6 +67,25 @@ const findAllBooks = async (limit, offset, categoryId) => {
     }
 };
 
+// Buscar todos os livros sem limite
+const findAllBooksAll = async () => {
+    try {
+        const query = `
+            SELECT L.*, I.URLImagem AS imagem_url, I.ImagemBase64 AS imagem_base64
+            FROM ${process.env.DB_SCHEMA}.Livros L
+            LEFT JOIN ${process.env.DB_SCHEMA}.LivroImagens LI ON L.ad_livros_id = LI.LivroID
+            LEFT JOIN ${process.env.DB_SCHEMA}.Imagem I ON LI.ImagemID = I.ad_imagem_id
+            WHERE L.ativo = 'Y' AND i.is_default = TRUE
+        `;
+    
+        const result = await pool.query(query);
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching books:', error);
+        throw error;
+    }
+};
+
 // Deletar um livro pelo ID
 const deleteBookById = async (id) => {
     try {
@@ -74,6 +93,21 @@ const deleteBookById = async (id) => {
         await pool.query(query, [id]);
     } catch (error) {
         console.error('Error deleting book:', error);
+        throw error;
+    }
+};
+
+// Função para buscar um livro pelo ISBN10 ou ISBN13 no banco de dados
+const getBookByISBNExist = async (isbn) => {
+    try {
+        const query = `SELECT EXISTS (
+            SELECT 1 FROM ${process.env.DB_SCHEMA}.Livros 
+            WHERE ISBN10 = $1 OR ISBN13 = $1
+        ) AS exist`;
+        const result = await pool.query(query, [isbn]);
+        return result.rows[0].exist; // Retorna o livro encontrado ou undefined
+    } catch (error) {
+        console.error('Erro ao buscar livro no banco de dados:', error);
         throw error;
     }
 };
@@ -286,6 +320,42 @@ const findFavoriteBooks = async (limit, offset, id) => {
     }
 };
 
+//Salvar a imagem no banco de dados
+const addImages = async ({ nome, URLImagem, ImagemBase64, is_default }) => {
+    try {
+        // Inserir os dados na tabela Imagem
+        const query = `
+            INSERT INTO ${process.env.DB_SCHEMA}.Imagem(nome, URLImagem, ImagemBase64, is_default) 
+            VALUES ($1, $2, $3, $4) 
+            RETURNING ad_imagem_id;
+        `;
+
+        const result = await pool.query(query, [nome, URLImagem, ImagemBase64, is_default]);
+        return result.rows[0];
+    } catch (error) {
+        console.error("Erro ao salvar imagem:", error);
+        throw new Error("Erro ao salvar imagem no banco");
+    }
+};
+
+//Vincular a imagem a livro
+const linkImageToBook = async (livroId, imagemId) => {
+    try {
+        const query = `
+            INSERT INTO ${process.env.DB_SCHEMA}.LivroImagens (LivroID, ImagemID) 
+            VALUES ($1, $2);
+        `;
+
+        await pool.query(query, [livroId, imagemId]);
+    } catch (error) {
+        console.error("Erro ao vincular imagem ao livro:", error);
+        throw new Error("Erro ao vincular imagem ao livro");
+    }
+};
+
 module.exports = { createBook, updateBook, getBookByISBN, findById, 
     findAllBooks, deleteBookById, getFeaturedBooks, getTopRatedBooks, 
-    getRecommendedBooks, getNewArrivals, findBookImageById, findFavoriteBooks};
+    getRecommendedBooks, getNewArrivals, findBookImageById, 
+    findFavoriteBooks, getBookByISBNExist, addImages,
+    linkImageToBook, findAllBooksAll
+};

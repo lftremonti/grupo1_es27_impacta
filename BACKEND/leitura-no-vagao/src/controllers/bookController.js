@@ -1,17 +1,17 @@
 const bookModel = require('../models/bookModel');
 const reviewsModel = require('../models/reviewsModel');
 const { validarCamposObrigatorios } = require('../utils/validationUtils');
-const { getAllBooksoogleApiBook } = require('../models/externalApi');
+const { getBookByISBNGoogleBooks, getPublisherFromGoogleBooks } = require('../models/externalApi');
 const ApiError = require('../utils/ApiError');
 const { successResponse } = require('../utils/ApiResponse');
 
 /**Cria Livros */
 const createBook = async (req, res, next) => {
     try {
-        const { titulo, autor, editora, ano_publicacao, descricao, ISBN10, ISBN13 } = req.body;
+        const { titulo, autor, editora, ano_publicacao, descricao, ISBN10, ISBN13, images } = req.body;
 
         // Verificar campos obrigatórios
-        const erroCampos = validarCamposObrigatorios(req.body, ["titulo", "ISBN10", "ISBN13"]);
+        const erroCampos = validarCamposObrigatorios(req.body, ["titulo", "ISBN13"]);
         if (erroCampos) {
             return next(new ApiError(400, erroCampos));
         }
@@ -19,9 +19,16 @@ const createBook = async (req, res, next) => {
         // Criação do livro no banco de dados
         const newBook = await bookModel.createBook({ titulo, autor, editora, ano_publicacao, descricao, ISBN10, ISBN13 });
 
+        if (images && images.length > 0) {
+            console.log("Salvando imagens...");
+            // Salvar as imagens e vincular ao livro
+            await saveImages(images, newBook.ad_livros_id);
+        }
+
         return successResponse(res, 201, 'Livro criado com sucesso!', { book: newBook });
     } catch (err) {
         next(new ApiError(500, 'Erro ao criar o livro', err.message));
+        console.log("Error ao criar um livro: ", err)
     }
 };
 
@@ -80,6 +87,17 @@ const getAllBooks = async (req, res, next) => {
     }
 };
 
+/**Busca por todos os livros sem os limites */
+const getAllBooksAll = async (req, res, next) => {
+    try {
+        const books = await bookModel.findAllBooksAll();
+        return successResponse(res, 200, 'Livros encontrados!', { books });
+    } catch (error) {
+        console.error(`Error: ${error}`);
+        next(new ApiError(500, 'Erro ao buscar os livros', error.message));
+    }
+};
+
 /** Deleta o livro pelo id*/
 const deleteBookById = async (req, res, next) => {
     const { id } = req.params;
@@ -123,13 +141,21 @@ const getBookByIsbnCreate = async (req, res, next) => {
         const bookFromDb = await bookModel.getBookByISBN(isbn);
         
         if (bookFromDb) {
-            return successResponse(res, 200, 'Livro encontrado no banco de dados!', { book: bookFromDb });
+            return successResponse(res, 200, 'Livro encontrado no banco de dados!', { book: bookFromDb, api: 0 });
         }
-
+        
         // 2. Se não encontrado, tenta na primeira API externa
         try {
-            const bookFromApi1 = await externalApi1.getBookByISBN(isbn);
-            return successResponse(res, 200, 'Livro encontrado na primeira API!', { book: bookFromApi1 });
+            const bookFromApi1 = await getBookByISBNGoogleBooks(isbn);
+            const dataBook = transformBookResponse(bookFromApi1);
+            const publisher = await getPublisherFromGoogleBooks(dataBook.previewLink);
+            
+            // Se publisher não for null, adiciona ao dataBook
+            if (publisher) {
+                dataBook.publisher = publisher;
+            }
+
+            return successResponse(res, 200, 'Livro encontrado na primeira API!', { book: dataBook, api: 1 });
         } catch (error) {
             console.error('Erro ao buscar na primeira API:', error.message);
         }
@@ -148,6 +174,21 @@ const getBookByIsbnCreate = async (req, res, next) => {
         console.error(`Error: ${error}`);
         next(new ApiError(500, 'Erro ao buscar informações do livro.', error.message));
     }
+};
+
+// Função para transformar a resposta da API em um formato mais simples
+const transformBookResponse = (apiResponse) => {
+    const bookData = apiResponse?.items?.[0]?.volumeInfo;
+
+    return {
+        title: bookData?.title || null,
+        authors: bookData?.authors || null,
+        publishedDate: bookData?.publishedDate || null,
+        description: bookData?.description || null,
+        categories: bookData?.categories || null,
+        textSnippet: apiResponse?.items?.[0]?.searchInfo?.textSnippet || null,
+        previewLink: bookData?.previewLink || null, // Adicionando o previewLink
+    };
 };
 
 // Livros em Destaques
@@ -216,6 +257,39 @@ const findFavoriteBooks = async (req, res, next) => {
     }
 };
 
+//Salvar as imagens 
+const saveImages = async (images, livroId) => {
+    try {
+        const imagePromises = images.map(async (image, index) => {
+            const { base64, fileName } = image;
+
+            // Determinar se é a imagem padrão (a primeira será a padrão)
+            const isDefault = index === 0;
+
+            // Salvar a imagem no banco (tabela Imagem)
+            const newImage = await bookModel.addImages({
+                nome: fileName,
+                URLImagem: null, // Como não há Firebase, a URL fica nula
+                ImagemBase64: base64,
+                is_default: isDefault
+            });
+
+            // Vincular a imagem com o livro na tabela LivroImagens
+            await bookModel.linkImageToBook(livroId, newImage.ad_imagem_id);
+
+            return newImage;
+        });
+
+        // Aguarda o salvamento de todas as imagens
+        return await Promise.all(imagePromises);
+    } catch (error) {
+        console.error("Erro ao salvar as imagens:", error);
+        throw new Error("Erro ao salvar as imagens no banco");
+    }
+};
+
 module.exports = { createBook, updateBook, getBookById, getBookByIsbn, 
     getAllBooks, deleteBookById, getFeaturedBooks, getTopRatedBooks, 
-    getRecommendedBooks, getNewArrivals, findFavoriteBooks };
+    getRecommendedBooks, getNewArrivals, findFavoriteBooks, getBookByIsbnCreate,
+    getAllBooksAll 
+};
