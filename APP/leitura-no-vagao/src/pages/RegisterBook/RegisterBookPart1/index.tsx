@@ -216,7 +216,6 @@ export function RegisterBookPart1() {
     setIsLoading(true);
 
     try {
-
       const newBookDataInfo = {
         isbn,
         title,
@@ -304,6 +303,7 @@ export function RegisterBookPart1() {
                           style={[styles.searchInput, styles.input]}
                           value={isbn}
                           onChangeText={setIsbn}
+                          keyboardType="numeric"
                         />
                         {isLoadingIsbn ? (
                           <TouchableOpacity>

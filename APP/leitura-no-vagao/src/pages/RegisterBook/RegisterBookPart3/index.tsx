@@ -174,6 +174,9 @@ export function RegisterBookPart3({ route, navigation }: BookRegisterProps){
 
   const hideDialog = () => {
     setVisible(false);
+    if (dialogType === 'success') {
+      navigation.navigate('Home' as never);
+    }
   };
 
   const fetchStations = async () => {

@@ -70,7 +70,7 @@ export function RegisterBookPart2({ route, navigation }: BookRegisterProps){
       setDescription(bookData.data.book.description || bookData.data.book.textSnippet || '');
       setAuthor(bookData.data.book.authors?.join(', ') || '');
       setPublisher(bookData.data.book.publisher.publisher || '');
-      setYear(bookData.data.book.publishedDate || '');
+      setYear((bookData.data.book.publishedDate || '').split('-')[0]);
     }
   }
 
@@ -210,7 +210,7 @@ export function RegisterBookPart2({ route, navigation }: BookRegisterProps){
                       style={[styles.searchInput, styles.input]}
                       value={year}
                       onChangeText={setYear}
-                      keyboardType="numeric"  // Apenas números
+                      keyboardType="numeric"
                       maxLength={4}  // Limita a 4 caracteres
                     />
                   </View>

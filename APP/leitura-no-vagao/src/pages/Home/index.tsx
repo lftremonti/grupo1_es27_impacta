@@ -14,7 +14,7 @@ import { Book } from '../../types/Book';
 import { Category } from '../../types/Category';
 import { UserCreate } from '../../types/UserCreate';
 import { getAllCategoryService } from '../../services/CategoryService/CategoryService';
-import { getAllBookService, getFeaturedBooks, getTopRatedBooks, getRecommendedBooks,getNewArrivals } from '../../services/BookService/BookService';
+import { getAllBookService, getFeaturedBooks, getTopRatedBooks, getRecommendedBooks,getNewArrivals, getAllBookAllService } from '../../services/BookService/BookService';
 import { RefreshControl } from 'react-native-gesture-handler';
 import LoadingAnimation from '../../components/LoadingAnimation';
 
@@ -32,6 +32,7 @@ export function Home({ navigation }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const [booksAll, setBooksAll] = useState<Book[]>([]);
   const [books, setBooks] = useState<Book[]>([]);
   const [featureBooks, setFeatureBooks] = useState<Book[]>([]);
   const [topRatedBooks, setTopRatedBooks] = useState<Book[]>([]);
@@ -67,6 +68,18 @@ export function Home({ navigation }: Props) {
       setCategories(categoryData.data.category);
     } catch (error) {
       console.error('Error loading categories:', error);
+    }
+  };
+
+  //Buscar todos os livros sem os limites
+  const fetchBooksAll = async () => {
+    try {
+      const booksData = await getAllBookAllService();
+      const newBooks = booksData?.data?.books || [];
+      
+      setBooksAll(newBooks);
+    } catch (error) {
+      console.error('Error loading books:', error);
     }
   };
 
@@ -206,6 +219,7 @@ export function Home({ navigation }: Props) {
     initialize();
     fetchCategories();
     fetchBooks();
+    fetchBooksAll();
     fetchFeaturedBooks();
     fetchTopRatedBooks();
     fetchRecommendedBooks();
@@ -228,6 +242,7 @@ export function Home({ navigation }: Props) {
     if (selectedCategory === categoryId) {
       setSelectedCategory(null);
       fetchBooks();
+      fetchBooksAll();
       fetchFeaturedBooks();
       fetchTopRatedBooks();
       fetchRecommendedBooks();
@@ -338,7 +353,7 @@ export function Home({ navigation }: Props) {
   const filterBooks = (query: any) => {
     if (query) {
       const lowercasedQuery = query.toLowerCase();
-      const filtered = featureBooks.filter(book =>
+      const filtered = booksAll.filter(book =>
         book.titulo.toLowerCase().includes(lowercasedQuery)
       );
       setFilteredBooks(filtered);
@@ -354,6 +369,7 @@ export function Home({ navigation }: Props) {
     try {
       await fetchCategories();
       await fetchBooks();
+      await fetchBooksAll();
       await fetchFeaturedBooks();
       await fetchTopRatedBooks();
       await fetchRecommendedBooks();

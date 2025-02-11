@@ -31,6 +31,32 @@ export async function getAllBookService(limit: number, offset: number, categoryI
   }
 }
 
+//Todos os livros sem os limites
+export async function getAllBookAllService() {
+  try {
+    const token = await SecureStorage.getItemAsync('userToken');
+    
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token || process.env.BYPASS_TOKEN_KEY}`,
+    };
+
+    // Adiciona o filtro de categoria se estiver selecionado
+    const url = `${config.BASE_URL}/api/books/getAllBookAll`;
+
+    const response = await fetch(url, { method: 'GET', headers });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.log(`Error ao buscar os livros no banco: ${config.BASE_URL}`, error);
+    throw new Error('Error ao buscar os livros no banco de dados');
+  }
+}
+
 // Buscar livro por id
 export async function getBookByIdService(id: number) {
   try {
@@ -226,7 +252,6 @@ export async function getFavoriteBookService(limit: number, offset: number, id: 
 // Criar o livro
 export async function saveBook(book: BookCreate) {
   try {
-    console.log("Entrou no metodo do front para chamar a api")
     const token = await SecureStorage.getItemAsync('userToken');
     
     // Define os headers dinamicamente com base no token
@@ -241,8 +266,6 @@ export async function saveBook(book: BookCreate) {
       headers: headers,
       body: JSON.stringify(book), // Envia os dados do usuário
     });
-
-    console.log("response: ", response)
     
     if (!response.ok) {
       console.error(`Error: ${response.statusText}`)
@@ -250,7 +273,6 @@ export async function saveBook(book: BookCreate) {
     }
 
     const result = await response.json();
-    console.log("Opa: ", result)
     return result;
   } catch (error) {
     console.error(`Error ao salvar o livro no banco: ${config.BASE_URL}`, error);

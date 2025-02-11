@@ -20,8 +20,6 @@ export async function donateBook(donateBook: DonateBookCreate) {
       body: JSON.stringify(donateBook), // Envia os dados do usuário
     });
 
-    console.log("Service response:", response);
-
     if (!response.ok) {
       console.error(`Error: ${response.statusText}`)
       throw new Error(`Error: ${response.statusText}`);
