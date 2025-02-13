@@ -6,6 +6,8 @@ import {
     TouchableWithoutFeedback,
     Keyboard,
     ScrollView,
+    Image,
+    FlatList
 } from 'react-native';
 import { ActivityIndicator, Provider } from 'react-native-paper';
 import MapView, { Marker } from 'react-native-maps';
@@ -17,6 +19,7 @@ import { styles } from './styles';
 import CustomDialog from '@/components/CustomDialog';
 import { RootStackParamList } from "@/routes/app.routes";
 import { Stations } from "@/types/Stations";
+import { Book } from "@/types/Book";
 
 type BookDetailsProps = {
   route: RouteProp<RootStackParamList, 'BookReservation'>;
@@ -25,16 +28,14 @@ type BookDetailsProps = {
 
 export default function BookReservation({ route, navigation }: BookDetailsProps){
 
+    const { book, user } = route.params;
     const [stations, setStations] = useState<Stations[]>([]);
     const [selectedStation, setSelectedStation] = useState<number>();
     const [currentLocation, setCurrentLocation] = useState<{
         latitude: number;
         longitude: number;
     } | null>(null);
-
-    const selectedLocation = selectedStation
-    ? stations.find((station) => station.ad_pontodoacao_id === selectedStation)
-    : null;
+    const [filteredBooks, setFilteredBooks] = useState<Book[]>([book]);
 
     const [visible, setVisible] = useState<boolean>(false);
     const [dialogTitle, setDialogTitle] = useState<string>('');
@@ -54,75 +55,109 @@ export default function BookReservation({ route, navigation }: BookDetailsProps)
         }
     };
 
+    const selectedLocation = selectedStation
+    ? stations.find((station) => station.ad_pontodoacao_id === selectedStation)
+    : null;
+
+    // Monta o layout dos livros a ser exibido ao utilizar a busca por nome
+    const renderBookSearch = ({ item }: { item: Book }) => {
+        // Definindo a fonte da imagem com uma expressão condicional
+        const imageSource = item.imagem_url
+          ? { uri: item.imagem_url }
+          : item.imagem_base64
+          ? { uri: `data:image/png;base64,${item.imagem_base64}` }
+          : null;
+      
+        return (
+          <TouchableOpacity onPress={() => navigation.navigate('BookDetails', { book: item })}>
+            <View style={styles.bookSearchContainer}>
+              {imageSource && (
+                <Image source={imageSource} style={styles.bookCover} />
+              )}
+              <View style={styles.bookSearchInfo}>
+                <Text style={styles.bookSearchTitle}>{item.titulo}</Text>
+                <Text style={styles.bookSearchAuthor}>{item.autor}</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        );
+    };
+
     return (
         <Provider>
-            <CustomDialog
-                visible={visible}
-                hideDialog={hideDialog}
-                title={dialogTitle}
-                message={dialogMessage}
-                type={dialogType}
-            />
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <ScrollView showsVerticalScrollIndicator={false}>
-                    <View style={styles.container}>
-                        <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.backButton}>
-                            <Ionicons name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
-                        </TouchableOpacity>
-
+                <FlatList
+                    style={styles.container}
+                    showsVerticalScrollIndicator={false}
+                    data={filteredBooks}
+                    renderItem={renderBookSearch}
+                    keyExtractor={(item, index) => `booksearch-${item.ad_livros_id}-${index}`}
+                    ListHeaderComponent={
+                        <>
+                            <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.backButton}>
+                                <Ionicons name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
+                            </TouchableOpacity>
+                            <Animated.View entering={FadeInDown.delay(200).duration(3500).springify()}>
+                                <View style={{ borderBottomWidth: 1, borderBottomColor: '#ccc', marginBottom: 5 }}>
+                                    <Text style={styles.welcome}>Ótima escolha!</Text>
+                                    <Text style={styles.instructions}>
+                                        Você selecionou um livro para embarcar em uma nova jornada. Agora, vamos encontrar onde ele está disponível para que você possa começar sua leitura!
+                                    </Text>
+                                </View>
+                            </Animated.View>
+                        </>
+                    }
+                    ListFooterComponent={
                         <Animated.View entering={FadeInDown.delay(650).duration(3500).springify()}>
+                            <View style={{ borderBottomWidth: 1, borderBottomColor: '#ccc', marginBottom: 5 }}></View>
                             <Text style={styles.label}>Localização no mapa</Text>
                             <View style={styles.viewInputCategory}>
-                            <MapView
-                                style={styles.map}
-                                initialRegion={{
-                                latitude: currentLocation?.latitude || -23.55052,
-                                longitude: currentLocation?.longitude || -46.633308,
-                                latitudeDelta: 0.05,
-                                longitudeDelta: 0.05,
-                                }}
-                                region={
-                                selectedLocation
-                                    ? {
-                                        latitude: selectedLocation.latitude,
-                                        longitude: selectedLocation.longitude,
-                                        latitudeDelta: 0.01,
-                                        longitudeDelta: 0.01,
-                                    }
-                                    : currentLocation
-                                    ? {
-                                        latitude: currentLocation.latitude,
-                                        longitude: currentLocation.longitude,
+                                <MapView
+                                    style={styles.map}
+                                    initialRegion={{
+                                        latitude: currentLocation?.latitude || -23.55052,
+                                        longitude: currentLocation?.longitude || -46.633308,
                                         latitudeDelta: 0.05,
                                         longitudeDelta: 0.05,
+                                    }}
+                                    region={
+                                        selectedLocation ? {
+                                            latitude: selectedLocation.latitude,
+                                            longitude: selectedLocation.longitude,
+                                            latitudeDelta: 0.01,
+                                            longitudeDelta: 0.01,
+                                        } : currentLocation ? {
+                                            latitude: currentLocation.latitude,
+                                            longitude: currentLocation.longitude,
+                                            latitudeDelta: 0.05,
+                                            longitudeDelta: 0.05,
+                                        } : undefined
                                     }
-                                    : undefined
-                                }
-                            >
-                                {selectedLocation && (
-                                <Marker
-                                    coordinate={{
-                                    latitude: Number(selectedLocation.latitude), // Converte para número
-                                    longitude: Number(selectedLocation.longitude), // Converte para número
-                                    }}
-                                    title={selectedLocation.nome}
-                                />
-                                )}
-                                {currentLocation && (
-                                <Marker
-                                    coordinate={{
-                                    latitude: currentLocation.latitude,
-                                    longitude: currentLocation.longitude,
-                                    }}
-                                    title="Sua localização"
-                                    pinColor="blue"
-                                />
-                                )}
-                            </MapView>
+                                >
+                                    {selectedLocation && (
+                                        <Marker
+                                            coordinate={{
+                                                latitude: Number(selectedLocation.latitude),
+                                                longitude: Number(selectedLocation.longitude),
+                                            }}
+                                            title={selectedLocation.nome}
+                                        />
+                                    )}
+                                    {currentLocation && (
+                                        <Marker
+                                            coordinate={{
+                                                latitude: currentLocation.latitude,
+                                                longitude: currentLocation.longitude,
+                                            }}
+                                            title="Sua localização"
+                                            pinColor="blue"
+                                        />
+                                    )}
+                                </MapView>
                             </View>
                         </Animated.View>
-                    </View>
-                </ScrollView>
+                    }
+                />
             </TouchableWithoutFeedback>
         </Provider>
     );

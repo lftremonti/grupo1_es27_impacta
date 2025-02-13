@@ -46,4 +46,49 @@ export const styles = StyleSheet.create({
         height: 450,
         marginVertical: 20
     },
+    welcome: {
+        fontSize: 34,
+        fontFamily: theme.fonts.title700,
+        fontWeight: 'bold',
+        color: theme.colors.primary,
+        marginVertical: 10,
+        marginBottom: 5,
+        textAlign: 'center',
+    },
+    instructions: {
+        fontSize: 13,
+        fontFamily: theme.fonts.text400,
+        color: theme.colors.secondary80,
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    bookSearchContainer:{
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+        backgroundColor: '#f0f0f0',
+        marginBottom: 10,
+        borderRadius: 10
+    },
+    bookSearchInfo:{
+        flex: 1,
+        padding: 20
+    },
+    bookSearchTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    bookSearchAuthor:{
+        fontSize: 14,
+        color: '#666',
+        textAlign: 'center',
+    },
+    bookCover: {
+        width: 100,
+        height: 150,
+        borderRadius: 10,
+    },
 })

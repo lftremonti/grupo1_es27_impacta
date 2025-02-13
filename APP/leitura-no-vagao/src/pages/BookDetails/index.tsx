@@ -424,7 +424,7 @@ export function BookDetails({ route, navigation }: BookDetailsProps) {
                       <TouchableOpacity style={styles.readButton} onPress={openBookFavoriteModal}>
                         <Text style={styles.readButtonText}>Adicionar aos favoritos</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => navigation.navigate('BookReservation' as never)} style={styles.readButton}>
+                      <TouchableOpacity onPress={() => navigation.navigate('BookReservation', { book, user: userData! })} style={styles.readButton}>
                         <Text style={styles.readButtonText}>Quero ler</Text>
                       </TouchableOpacity>
 
