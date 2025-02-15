@@ -91,4 +91,15 @@ export const styles = StyleSheet.create({
         height: 150,
         borderRadius: 10,
     },
+    buttonText: {
+        fontSize: 14,
+        fontFamily: theme.fonts.text400,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+    pickerStyle: {
+        width: '100%',
+        borderRadius: 10,
+        backgroundColor: theme.colors.secondary90
+    },
 })
