@@ -37,7 +37,6 @@ const linkBookWithCategoryExists = async (livroId, categoryId) => {
             ) AS exists`;
         const values = [livroId, categoryId];
         const result = await pool.query(query, values);
-        console.log("resultado: ", result.rows[0].exists)
         return result.rows[0].exists;
     } catch (error) {
         console.error('Error linking a book to a category:', error);
@@ -91,8 +90,6 @@ const getActiveCategoriesWithBooks = async () => {
 const findCategoryById = async (id) => {
     try {
         const result = await pool.query(`SELECT * FROM ${process.env.DB_SCHEMA}.Categorias WHERE ad_categoria_id = $1 AND ativo = 'Y'`, [id]);
-        console.log("Id: ", id)
-        console.log(result);
         return result.rows[0];
     } catch (error) {
         console.error('Error encontrar as categorias:', error);

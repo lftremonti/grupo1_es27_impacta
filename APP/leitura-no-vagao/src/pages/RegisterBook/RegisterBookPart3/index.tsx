@@ -156,7 +156,8 @@ export function RegisterBookPart3({ route, navigation }: BookRegisterProps){
         const donatebook = {
           isbn: bookDataInfo.bookDataInfo.isbn,
           pontoDeDoacaoId: selectedStation,
-          usuarioId: usuarioId
+          usuarioId: usuarioId,
+          livroId: newBook.data.book.ad_livros_id
         }
   
         const donate = await donateBook(donatebook);
@@ -191,11 +192,11 @@ export function RegisterBookPart3({ route, navigation }: BookRegisterProps){
         }));
         setStations(formattedStations);
       } else {
-        setStations([]); // Garante um array vazio caso não existam dados
+        setStations([]);
       }
     } catch (error) {
       console.error('Erro ao buscar estações:', error);
-      setStations([]); // Evita `undefined`
+      setStations([]);
     }
   };
   

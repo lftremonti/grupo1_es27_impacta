@@ -83,10 +83,15 @@ export function RegisterBookPart1() {
     setScanned(false);
     setIsLoading(true);
     try {
+      setIsbn(data);
       const bookData = await getBookByISBN(data);
-      setBookInfo(bookData);
-      setTitle(bookData?.data?.book?.title || '');
-      Alert.alert("Código lido", "O código {code} foi lido. Verifique se está correto.".replace('{code}', data));
+      if (bookData) {
+        populateData(bookData);
+        setBookInfo(bookData); // Salvar todas as informações do livro
+        showDialog('Sucesso', 'Informações do livro obtidas com sucesso!', 'success');
+      } else {
+        showDialog('Erro', 'Não foi possível encontrar o livro. Por favor preencha todos os campos.', 'fail');
+      }
     } catch {
       Alert.alert("Erro ao buscar informações do livro.");
     } finally {
@@ -244,18 +249,14 @@ export function RegisterBookPart1() {
         type={dialogType}
       />
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.container}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {scanned ? (
-                <CameraView style={styles.camera} onBarcodeScanned={handleBarCodeScanned}>
-                  <View style={styles.buttonContainer}>
-                    <TouchableOpacity style={styles.button} onPress={closeCamera}>
-                      <Text style={styles.text}>Fechar Câmera</Text>
-                    </TouchableOpacity>
-                  </View>
-                </CameraView>
-              ) : (
+        {scanned ? (
+          <CameraView style={styles.camera} onBarcodeScanned={handleBarCodeScanned}>
+            
+          </CameraView>
+        ) : (
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={styles.container}>
+              <ScrollView showsVerticalScrollIndicator={false}>
                 <>
                   <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.backButton}>
                     <Ionicons name="arrow-back-outline" size={24} color={styles.backArrowColor.color} />
@@ -349,11 +350,10 @@ export function RegisterBookPart1() {
 
                   </Animated.View>
                 </>
-              )}
-            
             </ScrollView>
           </View>
         </ScrollView>
+        )}
       </TouchableWithoutFeedback>
     </Provider>
   );

@@ -6,19 +6,19 @@ const { successResponse } = require('../utils/ApiResponse');
 
 const donateBook = async (req, res, next) => {
     try {
-        const { isbn, pontoDeDoacaoId, usuarioId } = req.body;
+        const { isbn, pontoDeDoacaoId, usuarioId, livroId } = req.body;
 
         // Verificar campos obrigatórios
-        const erroCampos = validarCamposObrigatorios(req.body, ["isbn", "pontoDeDoacaoId", "usuarioId"]);
+        const erroCampos = validarCamposObrigatorios(req.body, ["isbn", "pontoDeDoacaoId", "usuarioId", "livroId"]);
         if (erroCampos) {
             return next(new ApiError(400, erroCampos));
         }
 
         // Criar registro da doação
-        const doacao = await donateBookModel.createDonation({ isbn, pontoDeDoacaoId, usuarioId, quantidade: 1 });
+        const doacao = await donateBookModel.createDonation({ pontoDeDoacaoId, usuarioId, quantidade: 1, livroId });
 
-        // Atualizar estoque (adicionando 1 unidade no novo ponto)
-        await stockBooksModel.updateStock({ isbn, pontoDeDoacaoId, quantidade: 1 });
+        // Atualizar estoque
+        await stockBooksModel.updateStock({ livroId, isbn, pontoDeDoacaoId, quantidade: 1 });
 
         return successResponse(res, 201, 'Doação registrada com sucesso!', { doacao });
     } catch (error) {

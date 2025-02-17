@@ -76,6 +76,8 @@ export const styles = StyleSheet.create({
     bookAuthor: {
         fontSize: 14,
         color: '#666',
+        textAlign: 'center',
+        flexWrap: 'wrap',
     },
     categoryItem: {
         marginRight: 15,

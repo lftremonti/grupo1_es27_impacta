@@ -43,7 +43,6 @@ const linkBookWithCategory = async (req, res, next) => {
 
         // Criação do livro no banco de dados
         const newCategory = await categoryBookModel.linkBookWithCategory(livroId, categoryId);
-        console.log("newCategory: ", newCategory)
         return successResponse(res, 201, 'Vinculado a categoria criada com sucesso!', { category: newCategory });
     } catch (error) {
         next(new ApiError(500, 'Erro ao vincular uma categoria ao livro', error.message));

@@ -14,6 +14,7 @@ import * as SecureStore from 'expo-secure-store';
 import { Button } from 'react-native-paper';
 import { removeFavoriteBookService } from '../../services/FavoriteBookService/FavoriteBookService';
 import { FavoriteBook } from '../../types/FavoriteBook';
+import { User } from '@/types/User';
 
 type FavoriteProps = {
     route: RouteProp<RootStackParamList, 'Favorite'>;
@@ -24,6 +25,7 @@ export function Favorite({ route, navigation }: FavoriteProps) {
     const { user } = useUser();
     const [books, setBooks] = useState<Book[]>([]);
     const [hasMoreBooks, setHasMoreBooks] = useState(false);
+    const [userData, setUserData] = useState<User | null>();
 
     //getUserId para retornar o ID do usuário
     const getUserId = async (): Promise<number | null> => {
@@ -107,7 +109,7 @@ export function Favorite({ route, navigation }: FavoriteProps) {
                         <Text style={styles.bookSearchTitle}>{item.titulo}</Text>
                         <Text style={styles.bookSearchAuthor}>{item.autor}</Text>
                         <View style={{flexDirection: 'row', justifyContent: 'center'}}>
-                            <Button mode="contained" onPress={()=>{}} style={[styles.button, { marginRight: 8}]}>
+                            <Button mode="contained"  onPress={() => navigation.navigate('BookReservation', { book: item, user: userData! })} style={[styles.button, { marginRight: 8}]}>
                                 <Text style={styles.buttonText}>Quero Ler</Text>
                             </Button>
                             <Button mode="contained" onPress={()=>{removeBookFromFavorites(item.ad_livros_id)}} style={styles.button}>
@@ -124,6 +126,17 @@ export function Favorite({ route, navigation }: FavoriteProps) {
         const loadBooks = async () => {
             await fetchRecommendedBooks();
         };
+
+        const fetchUserData = async () => {
+            const storedToken = await SecureStore.getItemAsync('userToken');
+            const storedUserData = await SecureStore.getItemAsync('userData');
+            if (storedUserData) {
+                const parsedUserData = JSON.parse(storedUserData);
+                setUserData(parsedUserData);
+            }
+        };
+            
+        fetchUserData();
         loadBooks();
     }, [user]);
 

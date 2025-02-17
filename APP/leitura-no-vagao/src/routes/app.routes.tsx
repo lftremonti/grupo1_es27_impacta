@@ -13,6 +13,7 @@ import { User } from '../types/User';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { RegisterBookPart2 } from '@/pages/RegisterBook/RegisterBookPart2';
 import { RegisterBookPart3 } from '@/pages/RegisterBook/RegisterBookPart3';
+import BookReservation from '../pages/BookReservation';
 
 // Definir o tipo de parâmetros para o BookDetails
 export type RootStackParamList = {
@@ -22,8 +23,9 @@ export type RootStackParamList = {
   RegisterBookPart2: { bookInfo: any, bookDataInfo: any };
   RegisterBookPart3: { bookInfo: any, bookDataInfo: any };
   CommentsBook: { reviews: Array<any>; averageRating: any; book: Book };
-  Profile: { user: User};
-  Favorite: { user: User};
+  Profile: { user: User };
+  Favorite: { user: User };
+  BookReservation: { book: Book, user: User }
 };
 
 const Drawer = createDrawerNavigator<RootStackParamList>();
@@ -102,6 +104,14 @@ export function AppRoutes() {
       <Drawer.Screen 
         name="RegisterBookPart3" 
         component={RegisterBookPart3} 
+        options={{
+          drawerItemStyle: { display: 'none' },
+        }}
+      />
+
+      <Drawer.Screen 
+        name="BookReservation" 
+        component={BookReservation} 
         options={{
           drawerItemStyle: { display: 'none' },
         }}
