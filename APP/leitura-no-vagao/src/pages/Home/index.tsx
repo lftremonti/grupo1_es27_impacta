@@ -298,7 +298,7 @@ export function Home({ navigation }: Props) {
             <Image source={imageSource} style={styles.bookCover} />
           )}
           <Text style={styles.bookTitle} numberOfLines={2} ellipsizeMode="tail">{item.titulo}</Text>
-          <Text style={styles.bookAuthor}>{item.autor}</Text>
+          <Text style={styles.bookAuthor} numberOfLines={2} ellipsizeMode="tail">{item.autor}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -321,7 +321,7 @@ export function Home({ navigation }: Props) {
           )}
           <View style={styles.bookSearchInfo}>
             <Text style={styles.bookSearchTitle}>{item.titulo}</Text>
-            <Text style={styles.bookSearchAuthor}>{item.autor}</Text>
+            <Text style={styles.bookSearchAuthor} numberOfLines={2} ellipsizeMode="tail">{item.autor}</Text>
           </View>
         </View>
       </TouchableOpacity>

@@ -24,6 +24,7 @@ import { Stations } from "@/types/Stations";
 import { Book } from "@/types/Book";
 import { getDonationPointByBookId } from "@/services/StationsService/StationsService";
 import Geolocation from 'react-native-geolocation-service';
+import CustomDialog from "@/components/CustomDialog";
 
 type BookDetailsProps = {
   route: RouteProp<RootStackParamList, 'BookReservation'>;
@@ -37,20 +38,37 @@ export default function BookReservation({ route, navigation }: BookDetailsProps)
     const [currentLocation, setCurrentLocation] = useState<{ latitude: number; longitude: number } | null>(null);
     const [filteredBooks, setFilteredBooks] = useState<Book[]>([book]);
     const [loading, setLoading] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    const [visible, setVisible] = useState<boolean>(false);
+    const [dialogTitle, setDialogTitle] = useState<string>('');
+    const [dialogMessage, setDialogMessage] = useState<string>('');
+    const [dialogType, setDialogType] = useState<'alert' | 'warning' | 'success' | 'fail'>('alert');
+
+    const showDialog = (title: string, message: string, type: 'alert' | 'warning' | 'success' | 'fail') => {
+        setDialogTitle(title);
+        setDialogMessage(message);
+        setDialogType(type);
+        setVisible(true);
+    };
 
     const requestLocationPermission = async () => {
-        if (Platform.OS === 'android') {
-            const granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-                {
-                    title: "Permissão de Localização",
-                    message: "Precisamos da sua localização para mostrar os pontos de doação.",
-                    buttonNeutral: "Perguntar depois",
-                    buttonNegative: "Cancelar",
-                    buttonPositive: "OK"
-                }
-            );
-            return granted === PermissionsAndroid.RESULTS.GRANTED;
+        if (Platform.OS === "android") {
+            const granted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+            if (!granted) {
+                const newPermission = await PermissionsAndroid.request(
+                    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                    {
+                        title: "Permissão de Localização",
+                        message: "Precisamos da sua localização para mostrar os pontos de doação.",
+                        buttonNeutral: "Perguntar depois",
+                        buttonNegative: "Cancelar",
+                        buttonPositive: "OK",
+                    }
+                );
+                return newPermission === PermissionsAndroid.RESULTS.GRANTED;
+            }
+            return true;
         }
         return true;
     };
@@ -58,26 +76,30 @@ export default function BookReservation({ route, navigation }: BookDetailsProps)
     const getCurrentLocation = async () => {
         const hasPermission = await requestLocationPermission();
         if (!hasPermission) {
-            Alert.alert('Permissão negada', 'Não foi possível obter sua localização.');
+            Alert.alert("Permissão negada", "Não foi possível obter sua localização.");
             return;
         }
     
         Geolocation.getCurrentPosition(
             (position) => {
-                setCurrentLocation({
+                const newLocation = {
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude
-                });
+                };
+                setCurrentLocation(newLocation);
             },
             (error) => {
-                Alert.alert('Erro ao obter localização', error.message);
+                Alert.alert("Erro ao obter localização", error.message);
             },
             { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
         );
     };
 
+    // Agora chamamos a localização apenas uma vez
     useEffect(() => {
-        getCurrentLocation();
+        if (!currentLocation) {
+            getCurrentLocation();
+        }
         setFilteredBooks([book]);
         fetchStationsByBookId();
     }, [book]);
@@ -112,6 +134,26 @@ export default function BookReservation({ route, navigation }: BookDetailsProps)
             setStations([]);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleNext = async () => {
+        if (stations.length > 0) {
+            showDialog(
+                "Sucesso",
+                `O livro foi reservado! Por favor, dirija-se à estação ${stations[0].nome}.`,
+                "success"
+            );
+        } else {
+            showDialog("Erro", "Nenhuma estação disponível.", "fail");
+        }
+    };
+    
+
+    const hideDialog = () => {
+        setVisible(false);
+        if (dialogType === 'success') {
+          navigation.navigate('Home' as never);
         }
     };
 
@@ -151,6 +193,13 @@ export default function BookReservation({ route, navigation }: BookDetailsProps)
 
     return (
         <Provider>
+            <CustomDialog
+                visible={visible}
+                hideDialog={hideDialog}
+                title={dialogTitle}
+                message={dialogMessage}
+                type={dialogType}
+            />
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <FlatList
                     style={styles.container}
@@ -208,6 +257,29 @@ export default function BookReservation({ route, navigation }: BookDetailsProps)
                                         )}
                                     </MapView>
                                 )}
+                            </View>
+                            <Animated.View entering={FadeInDown.delay(1050).duration(3500).springify()}>
+                                {isLoading ? (
+                                    <TouchableOpacity style={styles.button}>
+                                        <ActivityIndicator size="large" color="#FFFFFF" />
+                                    </TouchableOpacity>
+                                ) : (
+                                    <TouchableOpacity 
+                                        style={styles.button} 
+                                        onPress={handleNext}
+                                    >
+                                        <Text style={styles.buttonText}>Confirmar</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </Animated.View>
+                            <View>
+                                <Text></Text>
+                            </View>
+                            <View>
+                                <Text></Text>
+                            </View>
+                            <View>
+                            <Text></Text>
                             </View>
                         </Animated.View>
                     }
